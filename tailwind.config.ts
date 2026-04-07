@@ -12,7 +12,11 @@ export default {
         "2xl": "1400px",
       },
     },
-    extend: {
+      extend: {
+      fontFamily: {
+        heading: ['Plus Jakarta Sans', 'sans-serif'],
+        body: ['DM Sans', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
