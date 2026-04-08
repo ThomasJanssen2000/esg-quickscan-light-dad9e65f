@@ -81,17 +81,32 @@ function FrameworkCard({ fw }: { fw: FrameworkAssessment }) {
 }
 
 export default function ESGReport({ report, companyName, onRestart }: Props) {
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+  const [downloadName, setDownloadName] = useState("");
+  const [downloadEmail, setDownloadEmail] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const canDownload = downloadName.trim().length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(downloadEmail);
+
+  const handleDownloadPdf = async () => {
+    if (!canDownload) return;
+    setIsGenerating(true);
+    try {
+      const { generateESGPdf } = await import("@/lib/generatePdf");
+      const doc = generateESGPdf(report, companyName);
+      doc.save(`ESG-Quickscan-${companyName.replace(/\s+/g, "-")}.pdf`);
+      setShowDownloadDialog(false);
+      setDownloadName("");
+      setDownloadEmail("");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const verplicht = report.frameworks.filter((f) => f.status === "verplicht");
   const relevant = report.frameworks.filter((f) => f.status === "waarschijnlijk relevant");
   const aanbevolen = report.frameworks.filter((f) => f.status === "aanbevolen");
   const rest = report.frameworks.filter((f) => f.status === "vrijwillig" || f.status === "nog niet van toepassing");
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <header className="px-6 py-5 flex items-center justify-between border-b border-border/50">
-        <div className="font-heading font-bold text-xl tracking-tight text-primary">Act Right</div>
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">ESG Rapport</span>
-      </header>
 
       <main className="flex-1 px-6 py-10">
         <div className="max-w-3xl mx-auto space-y-10">
