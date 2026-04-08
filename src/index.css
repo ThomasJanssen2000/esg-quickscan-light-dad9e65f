@@ -2,42 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
 @layer base {
   :root {
-    --background: 210 25% 97%;
-    --foreground: 220 30% 15%;
+    /* Act Right brand: white bg, dark olive text, lime-yellow accent */
+    --background: 60 10% 98%;
+    --foreground: 70 20% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 15%;
+    --card-foreground: 70 20% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 15%;
+    --popover-foreground: 70 20% 15%;
 
-    --primary: 220 45% 20%;
-    --primary-foreground: 0 0% 100%;
+    /* Dark olive — primary brand color */
+    --primary: 72 18% 18%;
+    --primary-foreground: 60 10% 98%;
 
-    --secondary: 155 60% 40%;
-    --secondary-foreground: 0 0% 100%;
+    /* Lime-yellow — Act Right accent */
+    --secondary: 66 62% 54%;
+    --secondary-foreground: 72 18% 12%;
 
-    --muted: 210 20% 93%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 60 8% 93%;
+    --muted-foreground: 70 8% 42%;
 
-    --accent: 155 50% 45%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 66 62% 54%;
+    --accent-foreground: 72 18% 12%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 15% 88%;
-    --input: 210 15% 88%;
-    --ring: 155 60% 40%;
+    --border: 60 8% 88%;
+    --input: 60 8% 85%;
+    --ring: 66 62% 54%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --font-heading: 'Plus Jakarta Sans', sans-serif;
+    --font-heading: 'Inter', sans-serif;
     --font-body: 'DM Sans', sans-serif;
+
+    /* Dark section — olive/charcoal for footer/CTA blocks */
+    --dark-bg: 72 18% 14%;
+    --dark-fg: 60 10% 92%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
