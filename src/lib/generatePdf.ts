@@ -92,7 +92,7 @@ export function generateESGPdf(report: ESGReport, companyName: string): jsPDF {
     doc.setFillColor(230, 232, 236);
     doc.roundedRect(barX, y, barW, 5, 1, 1, "F");
     // Bar fill
-    const fillColor = c.percentage >= 60 ? green : c.percentage >= 40 ? yellow : red;
+    const fillColor: readonly [number, number, number] = c.percentage >= 60 ? green : c.percentage >= 40 ? yellow : red;
     doc.setFillColor(...fillColor);
     doc.roundedRect(barX, y, barW * (c.percentage / 100), 5, 1, 1, "F");
     doc.setTextColor(...navy);
@@ -164,7 +164,7 @@ export function generateESGPdf(report: ESGReport, companyName: string): jsPDF {
     addPageIfNeeded(15);
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    const groupColor = group.label === "Verplicht" ? red : group.label === "Waarschijnlijk relevant" ? yellow : group.label === "Aanbevolen" ? green : gray;
+    const groupColor: readonly [number, number, number] = group.label === "Verplicht" ? red : group.label === "Waarschijnlijk relevant" ? yellow : group.label === "Aanbevolen" ? green : gray;
     doc.setTextColor(...groupColor);
     doc.text(group.label.toUpperCase(), margin, y);
     y += 6;
