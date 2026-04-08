@@ -239,6 +239,7 @@ export default function ESGReport({ report, companyName, onRestart }: Props) {
         <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Act Right · Adviesbureau Eindhoven · Dit rapport is indicatief en vervangt geen professioneel advies.</p>
       </footer>
     </div>
+    </>
   );
 }
 
