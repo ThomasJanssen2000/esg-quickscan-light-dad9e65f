@@ -108,6 +108,43 @@ export default function ESGReport({ report, companyName, onRestart }: Props) {
   const aanbevolen = report.frameworks.filter((f) => f.status === "aanbevolen");
   const rest = report.frameworks.filter((f) => f.status === "vrijwillig" || f.status === "nog niet van toepassing");
 
+  return (
+    <>
+      <Dialog open={showDownloadDialog} onOpenChange={setShowDownloadDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-primary">Rapport downloaden als PDF</DialogTitle>
+            <DialogDescription>Vul uw naam en e-mailadres in om het rapport te downloaden.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label className="text-sm font-semibold mb-1.5 block">Naam</Label>
+              <Input value={downloadName} onChange={(e) => setDownloadName(e.target.value)} placeholder="Uw volledige naam" />
+            </div>
+            <div>
+              <Label className="text-sm font-semibold mb-1.5 block">E-mailadres</Label>
+              <Input value={downloadEmail} onChange={(e) => setDownloadEmail(e.target.value)} placeholder="uw@email.nl" type="email" />
+            </div>
+            <Button onClick={handleDownloadPdf} disabled={!canDownload || isGenerating} className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold rounded-xl">
+              {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              {isGenerating ? "Genereren..." : "Download PDF"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className="min-h-screen flex flex-col">
+        <header className="px-6 py-5 flex items-center justify-between border-b border-border/50">
+          <div className="font-heading font-bold text-xl tracking-tight text-primary">Act Right</div>
+          <div className="flex items-center gap-3">
+            <Button onClick={() => setShowDownloadDialog(true)} variant="outline" size="sm" className="rounded-xl border-secondary text-secondary hover:bg-secondary/10">
+              <Download className="mr-2 h-4 w-4" />
+              Download PDF
+            </Button>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">ESG Rapport</span>
+          </div>
+        </header>
+
       <main className="flex-1 px-6 py-10">
         <div className="max-w-3xl mx-auto space-y-10">
           {/* Hero score */}
