@@ -14,17 +14,20 @@ const features = [
 
 export default function ESGIntro({ onStart }: ESGIntroProps) {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="px-6 py-5 flex items-center justify-between">
-        <div className="font-heading font-bold text-xl tracking-tight text-primary">
-          Act Right
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Header — mimics actright.nl nav style */}
+      <header className="px-8 py-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="font-heading text-2xl tracking-tight text-primary">
+            act<span className="font-extrabold">right</span>
+          </span>
+          <span className="text-xs text-muted-foreground tracking-wide ml-1 hidden sm:inline">for a better future</span>
         </div>
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">ESG Quickscan Light</span>
+        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.2em]">ESG Quickscan Light</span>
       </header>
 
       {/* Hero */}
-      <main className="flex-1 flex items-center justify-center px-6 pb-16">
+      <main className="flex-1 flex items-center justify-center px-6 pb-20">
         <div className="max-w-3xl w-full">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -32,24 +35,23 @@ export default function ESGIntro({ onStart }: ESGIntroProps) {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <span className="inline-block text-xs font-semibold uppercase tracking-widest text-secondary mb-4">
+            <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.2em] text-accent mb-5">
               Gratis & vrijblijvend
             </span>
-            <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-extrabold text-primary leading-tight mb-5">
+            <h1 className="font-heading text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-primary leading-[1.15] mb-6">
               Wat moet uw organisatie
               <br />
-              <span className="text-secondary">nu écht doen met ESG?</span>
+              <span className="text-accent">nu écht doen met ESG?</span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed">
+            <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed">
               Krijg in 5 minuten een eerste inzicht in uw ESG-positie. Ontvang een persoonlijk rapport met uw maturity score, risico's, kansen en concrete vervolgstappen.
             </p>
             <Button
               onClick={onStart}
-              size="lg"
-              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold text-base px-8 py-6 rounded-xl shadow-lg shadow-secondary/20 transition-all hover:shadow-xl hover:shadow-secondary/30"
+              className="bg-accent hover:bg-accent/85 text-accent-foreground font-semibold text-sm px-8 py-5 rounded-md shadow-none border border-accent transition-all hover:shadow-md"
             >
-              Start de Quickscan
-              <ArrowRight className="ml-2 h-5 w-5" />
+              start de quickscan
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </motion.div>
 
@@ -58,15 +60,15 @@ export default function ESGIntro({ onStart }: ESGIntroProps) {
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.25 }}
-            className="grid md:grid-cols-3 gap-6 mt-16"
+            className="grid md:grid-cols-3 gap-6 mt-20"
           >
             {features.map((f) => (
               <div
                 key={f.title}
-                className="bg-card rounded-2xl p-6 border border-border/60 shadow-sm"
+                className="bg-card rounded-lg p-6 border border-border/60"
               >
-                <div className="h-10 w-10 rounded-xl bg-secondary/10 flex items-center justify-center mb-4">
-                  <f.icon className="h-5 w-5 text-secondary" />
+                <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                  <f.icon className="h-5 w-5 text-accent" />
                 </div>
                 <h3 className="font-heading font-bold text-primary text-sm mb-1">{f.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
@@ -76,11 +78,16 @@ export default function ESGIntro({ onStart }: ESGIntroProps) {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="px-6 py-4 text-center">
-        <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Act Right · Adviesbureau Eindhoven
-        </p>
+      {/* Footer — dark section like actright.nl */}
+      <footer className="bg-primary px-8 py-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-xs text-primary-foreground/60">
+            © {new Date().getFullYear()} act right b.v.
+          </p>
+          <p className="text-xs text-primary-foreground/40">
+            act responsible. act win-win. act now.
+          </p>
+        </div>
       </footer>
     </div>
   );

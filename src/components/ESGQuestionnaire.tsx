@@ -55,18 +55,21 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
   const progress = ((step + 1) / steps.length) * 100;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="px-6 py-5 flex items-center justify-between border-b border-border/50">
-        <div className="font-heading font-bold text-xl tracking-tight text-primary">Act Right</div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground font-medium">
-            Stap {step + 1} van {steps.length}
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className="px-8 py-6 flex items-center justify-between border-b border-border/40">
+        <div className="flex items-center gap-2">
+          <span className="font-heading text-xl tracking-tight text-primary">
+            act<span className="font-extrabold">right</span>
           </span>
         </div>
+        <span className="text-[11px] text-muted-foreground font-medium tracking-wide">
+          Stap {step + 1} van {steps.length}
+        </span>
       </header>
 
+      {/* Progress bar */}
       <div className="h-1 bg-muted">
-        <motion.div className="h-full bg-secondary" initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4 }} />
+        <motion.div className="h-full bg-accent" initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4 }} />
       </div>
 
       <main className="flex-1 flex items-start justify-center px-6 py-10">
@@ -76,24 +79,24 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
               {isCompanyStep ? (
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Building2 className="h-5 w-5 text-primary" />
+                    <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                      <Building2 className="h-5 w-5 text-accent" />
                     </div>
                     <h2 className="font-heading text-2xl font-bold text-primary">Bedrijfsinformatie</h2>
                   </div>
-                  <p className="text-muted-foreground mb-8">Vertel ons iets over uw organisatie zodat we de resultaten beter kunnen afstemmen.</p>
+                  <p className="text-muted-foreground mb-8 text-sm">Vertel ons iets over uw organisatie zodat we de resultaten beter kunnen afstemmen.</p>
 
                   <div className="space-y-6">
                     <div>
                       <Label className="text-sm font-semibold text-foreground mb-2 block">Bedrijfsnaam</Label>
-                      <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Uw bedrijfsnaam" className="h-12 rounded-xl border-border" />
+                      <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Uw bedrijfsnaam" className="h-12 rounded-md border-border" />
                     </div>
 
                     <div>
                       <Label className="text-sm font-semibold text-foreground mb-3 block">Sector</Label>
                       <div className="grid grid-cols-2 gap-2">
                         {sectors.map((s) => (
-                          <button key={s} onClick={() => setSector(s)} className={`text-left px-4 py-3 rounded-xl border text-sm transition-all ${sector === s ? "border-secondary bg-secondary/10 text-secondary font-medium" : "border-border hover:border-secondary/40 text-foreground"}`}>
+                          <button key={s} onClick={() => setSector(s)} className={`text-left px-4 py-3 rounded-md border text-sm transition-all ${sector === s ? "border-accent bg-accent/10 text-primary font-medium" : "border-border hover:border-accent/40 text-foreground"}`}>
                             {s}
                           </button>
                         ))}
@@ -104,7 +107,7 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
                       <Label className="text-sm font-semibold text-foreground mb-3 block">Aantal medewerkers</Label>
                       <div className="grid grid-cols-5 gap-2">
                         {employeeCounts.map((c) => (
-                          <button key={c} onClick={() => setEmployeeCount(c)} className={`px-3 py-3 rounded-xl border text-sm font-medium transition-all ${employeeCount === c ? "border-secondary bg-secondary/10 text-secondary" : "border-border hover:border-secondary/40 text-foreground"}`}>
+                          <button key={c} onClick={() => setEmployeeCount(c)} className={`px-3 py-3 rounded-md border text-sm font-medium transition-all ${employeeCount === c ? "border-accent bg-accent/10 text-primary" : "border-border hover:border-accent/40 text-foreground"}`}>
                             {c}
                           </button>
                         ))}
@@ -115,7 +118,7 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
                       <Label className="text-sm font-semibold text-foreground mb-3 block">Jaaromzet (indicatief)</Label>
                       <div className="grid grid-cols-2 gap-2">
                         {revenueRanges.map((r) => (
-                          <button key={r} onClick={() => setRevenue(r)} className={`text-left px-4 py-3 rounded-xl border text-sm transition-all ${revenue === r ? "border-secondary bg-secondary/10 text-secondary font-medium" : "border-border hover:border-secondary/40 text-foreground"}`}>
+                          <button key={r} onClick={() => setRevenue(r)} className={`text-left px-4 py-3 rounded-md border text-sm transition-all ${revenue === r ? "border-accent bg-accent/10 text-primary font-medium" : "border-border hover:border-accent/40 text-foreground"}`}>
                             {r}
                           </button>
                         ))}
@@ -126,12 +129,12 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
               ) : (
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="h-10 w-10 rounded-xl bg-secondary/10 flex items-center justify-center">
-                      {(() => { const Icon = themeIcons[currentStep] || ShieldCheck; return <Icon className="h-5 w-5 text-secondary" />; })()}
+                    <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                      {(() => { const Icon = themeIcons[currentStep] || ShieldCheck; return <Icon className="h-5 w-5 text-accent" />; })()}
                     </div>
                     <h2 className="font-heading text-2xl font-bold text-primary">{currentStep}</h2>
                   </div>
-                  <p className="text-muted-foreground mb-8">Beantwoord de onderstaande vragen zo eerlijk mogelijk.</p>
+                  <p className="text-muted-foreground mb-8 text-sm">Beantwoord de onderstaande vragen zo eerlijk mogelijk.</p>
 
                   <div className="space-y-8">
                     {currentQuestions.map((q, i) => (
@@ -145,13 +148,13 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
         </div>
       </main>
 
-      <div className="px-6 py-5 border-t border-border/50 flex justify-between">
-        <Button variant="ghost" onClick={() => (step === 0 ? onBack() : setStep(step - 1))} className="text-muted-foreground">
+      <div className="px-8 py-5 border-t border-border/40 flex justify-between bg-background">
+        <Button variant="ghost" onClick={() => (step === 0 ? onBack() : setStep(step - 1))} className="text-muted-foreground text-sm">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Terug
+          terug
         </Button>
-        <Button onClick={handleNext} disabled={!canProceed()} className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold px-6 rounded-xl disabled:opacity-40">
-          {step === steps.length - 1 ? "Bekijk rapport" : "Volgende"}
+        <Button onClick={handleNext} disabled={!canProceed()} className="bg-accent hover:bg-accent/85 text-accent-foreground font-semibold px-6 rounded-md disabled:opacity-40 text-sm">
+          {step === steps.length - 1 ? "bekijk rapport" : "volgende"}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
@@ -163,13 +166,13 @@ function QuestionCard({ question, index, value, onChange }: { question: Question
   return (
     <div>
       <div className="mb-3">
-        <span className="text-xs font-bold text-secondary mr-2">{index}.</span>
-        <span className="font-heading font-semibold text-foreground">{question.question}</span>
+        <span className="text-xs font-bold text-accent mr-2">{index}.</span>
+        <span className="font-heading font-semibold text-foreground text-[15px]">{question.question}</span>
         {question.description && <p className="text-sm text-muted-foreground mt-1 ml-5">{question.description}</p>}
       </div>
       <div className="grid gap-2 ml-5">
         {question.options.map((opt) => (
-          <button key={opt.value} onClick={() => onChange(opt.value)} className={`text-left px-4 py-3 rounded-xl border text-sm transition-all ${value === opt.value ? "border-secondary bg-secondary/10 text-secondary font-medium" : "border-border hover:border-secondary/40 text-foreground"}`}>
+          <button key={opt.value} onClick={() => onChange(opt.value)} className={`text-left px-4 py-3 rounded-md border text-sm transition-all ${value === opt.value ? "border-accent bg-accent/10 text-primary font-medium" : "border-border hover:border-accent/40 text-foreground"}`}>
             {opt.label}
           </button>
         ))}
