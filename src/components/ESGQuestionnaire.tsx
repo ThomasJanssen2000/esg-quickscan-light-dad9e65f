@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { questions, sectors, employeeCounts, revenueRanges, getThemes, getQuestionsByTheme, type ScanAnswers, type Question } from "@/lib/esgQuestions";
+import actRightLogo from "@/assets/actright-logo.png";
 
 interface Props {
   onComplete: (data: ScanAnswers) => void;
@@ -57,11 +58,7 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="px-8 py-6 flex items-center justify-between border-b border-border/40">
-        <div className="flex items-center gap-2">
-          <span className="font-heading text-xl tracking-tight text-primary">
-            act<span className="font-extrabold">right</span>
-          </span>
-        </div>
+        <img src={actRightLogo} alt="Act Right — for a better future" className="h-8 sm:h-10" />
         <span className="text-[11px] text-muted-foreground font-medium tracking-wide">
           Stap {step + 1} van {steps.length}
         </span>

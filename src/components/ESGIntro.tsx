@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Shield, TrendingUp, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import actRightLogo from "@/assets/actright-logo.png";
 
 interface ESGIntroProps {
   onStart: () => void;
@@ -15,18 +16,11 @@ const features = [
 export default function ESGIntro({ onStart }: ESGIntroProps) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header — mimics actright.nl nav style */}
       <header className="px-8 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="font-heading text-2xl tracking-tight text-primary">
-            act<span className="font-extrabold">right</span>
-          </span>
-          <span className="text-xs text-muted-foreground tracking-wide ml-1 hidden sm:inline">for a better future</span>
-        </div>
+        <img src={actRightLogo} alt="Act Right — for a better future" className="h-8 sm:h-10" />
         <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.2em]">ESG Quickscan Light</span>
       </header>
 
-      {/* Hero */}
       <main className="flex-1 flex items-center justify-center px-6 pb-20">
         <div className="max-w-3xl w-full">
           <motion.div
@@ -55,7 +49,6 @@ export default function ESGIntro({ onStart }: ESGIntroProps) {
             </Button>
           </motion.div>
 
-          {/* Features */}
           <motion.div
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
@@ -78,7 +71,6 @@ export default function ESGIntro({ onStart }: ESGIntroProps) {
         </div>
       </main>
 
-      {/* Footer — dark section like actright.nl */}
       <footer className="bg-primary px-8 py-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-primary-foreground/60">
