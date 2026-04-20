@@ -17,7 +17,7 @@ export default function ESGIntro({ onStart }: Props) {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/60 bg-background/90 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
-          <img src={actRightLogo} alt="Act Right — for a better future" className="h-9 sm:h-10" />
+          <img src={actRightLogo} alt="Act Right, for a better future" className="h-9 sm:h-10" />
           <span className="hidden sm:inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
             ESG Quickscan Light
           </span>
@@ -37,7 +37,7 @@ export default function ESGIntro({ onStart }: Props) {
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-2xl mb-10">
-              Ontvang binnen 5 minuten een persoonlijke ESG Quickscan voor uw organisatie — afgestemd op uw sector, omvang en keten.
+              Ontvang binnen 5 minuten een persoonlijke ESG Quickscan voor uw organisatie, afgestemd op uw sector, omvang en keten.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-12">
@@ -90,9 +90,9 @@ export default function ESGIntro({ onStart }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            { num: "01", title: "Wat nu relevant is", text: "Maximaal 5 onderwerpen waar u nu echt op moet acteren — met aanbevolen eerste stap." },
-            { num: "02", title: "Wat binnenkort speelt", text: "Wetgeving en standaarden waar u zich op moet voorbereiden binnen 1-3 jaar." },
-            { num: "03", title: "Concrete vervolgstappen", text: "Een mix van quick wins, compliance en strategische acties — afgestemd op uw volwassenheid." },
+            { num: "01", title: "Wat nu relevant is", text: "Maximaal 5 onderwerpen waar u nu echt op moet acteren, met aanbevolen eerste stap." },
+            { num: "02", title: "Wat binnenkort speelt", text: "Wetgeving en standaarden waar u zich op moet voorbereiden binnen 1 tot 3 jaar." },
+            { num: "03", title: "Concrete vervolgstappen", text: "Een mix van quick wins, compliance en strategische acties, afgestemd op uw volwassenheid." },
           ].map((c) => (
             <div key={c.num} className="bg-card rounded-lg border border-border p-7 hover:border-accent transition-colors">
               <span className="font-heading text-xs text-primary/60 font-semibold tracking-wider">{c.num}</span>

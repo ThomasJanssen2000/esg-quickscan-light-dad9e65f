@@ -90,7 +90,7 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
       <main className="max-w-6xl mx-auto px-6 lg:px-10 py-16 space-y-20">
         {/* Wat nu relevant */}
         <Section
-          eyebrow="01 — Direct relevant"
+          eyebrow="01 · Direct relevant"
           title="Wat nu relevant is"
           subtitle={`Op basis van uw antwoorden zijn dit de ${report.nuRelevant.length} belangrijkste aandachtspunten. Begin hier.`}
         >
@@ -106,9 +106,9 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
         {/* Binnenkort relevant */}
         {report.binnenkortRelevant.length > 0 && (
           <Section
-            eyebrow="02 — Op de horizon"
+            eyebrow="02 · Op de horizon"
             title="Wat binnenkort relevant wordt"
-            subtitle="Onderwerpen waar u zich op moet voorbereiden in de komende 1-3 jaar."
+            subtitle="Onderwerpen waar u zich op moet voorbereiden in de komende 1 tot 3 jaar."
           >
             <div className="space-y-4">
               {report.binnenkortRelevant.map((t, i) => <TopicCard key={t.topic.id} item={t} index={i + 1} compact />)}
@@ -119,7 +119,7 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
         {/* Geen prioriteit */}
         {report.geenPrioriteit.length > 0 && (
           <Section
-            eyebrow="03 — Geen zorg"
+            eyebrow="03 · Geen zorg"
             title="Wat nu geen prioriteit heeft"
             subtitle="Onderwerpen die vaak worden overschat, maar voor uw organisatie nu niet direct relevant zijn."
           >
@@ -141,9 +141,9 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
 
         {/* Acties */}
         <Section
-          eyebrow="04 — Actie"
+          eyebrow="04 · Actie"
           title="Concrete vervolgstappen"
-          subtitle={`5 acties op maat — afgestemd op uw volwassenheidsniveau (${report.maturityLabel.toLowerCase()}) en drijfveer.`}
+          subtitle={`5 acties op maat, afgestemd op uw volwassenheidsniveau (${report.maturityLabel.toLowerCase()}) en drijfveer.`}
         >
           <div className="space-y-3">
             {report.acties.map((a, i) => (

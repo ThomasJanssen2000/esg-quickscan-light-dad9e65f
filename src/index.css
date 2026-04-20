@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600;700;800&family=Funnel+Sans:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -46,8 +46,8 @@
 
     --radius: 0.5rem;
 
-    --font-heading: 'Inter', system-ui, sans-serif;
-    --font-body: 'DM Sans', 'Inter', system-ui, sans-serif;
+    --font-heading: 'Funnel Display', system-ui, sans-serif;
+    --font-body: 'Funnel Sans', 'Funnel Display', system-ui, sans-serif;
 
     /* Subtiele gradients & shadows */
     --gradient-hero: linear-gradient(135deg, hsl(72 22% 18%) 0%, hsl(72 25% 12%) 100%);
@@ -80,6 +80,7 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    font-weight: 300;
   }
 
   h1, h2, h3, h4, h5, h6 {

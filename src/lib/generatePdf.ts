@@ -91,7 +91,7 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
   doc.addPage();
   let y = pageHeader(doc, "Samenvatting");
 
-  y = drawEyebrow(doc, "01 — Uw ESG-profiel", y, M);
+  y = drawEyebrow(doc, "01 · Uw ESG-profiel", y, M);
   y = drawHeading(doc, "Wat dit rapport u vertelt", y, M, CW);
   y += 4;
   y = drawBody(doc, report.summary, y, M, CW);
@@ -118,7 +118,7 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
   y += 48;
 
   // Theme scores
-  y = drawEyebrow(doc, "02 — Actieve thema's", y, M);
+  y = drawEyebrow(doc, "02 · Actieve thema's", y, M);
   y = drawHeading(doc, "Welke ESG-thema's spelen voor u?", y, M, CW);
   y += 4;
 
@@ -140,7 +140,7 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
   // ============= PAGE 3+ — NU RELEVANT =============
   doc.addPage();
   y = pageHeader(doc, "Wat nu relevant is");
-  y = drawEyebrow(doc, "Direct relevant — begin hier", y, M);
+  y = drawEyebrow(doc, "Direct relevant · begin hier", y, M);
   y = drawHeading(doc, `Top ${report.nuRelevant.length} aandachtspunten`, y, M, CW);
   y += 6;
 
@@ -156,7 +156,7 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
   if (report.binnenkortRelevant.length > 0) {
     doc.addPage();
     y = pageHeader(doc, "Wat binnenkort relevant wordt");
-    y = drawEyebrow(doc, "Op de horizon — bereid u voor", y, M);
+    y = drawEyebrow(doc, "Op de horizon · bereid u voor", y, M);
     y = drawHeading(doc, "Onderwerpen voor de komende 1-3 jaar", y, M, CW);
     y += 6;
 
@@ -169,7 +169,7 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
   if (report.geenPrioriteit.length > 0) {
     if (y > H - 80) { doc.addPage(); y = pageHeader(doc, "Wat geen prioriteit heeft"); }
     else { y += 8; }
-    y = drawEyebrow(doc, "Geen zorg — niet voor u", y, M);
+    y = drawEyebrow(doc, "Geen zorg · niet voor u", y, M);
     y = drawHeading(doc, "Wat nu geen prioriteit heeft", y, M, CW);
     y += 4;
     y = drawBody(doc, "Onderwerpen die vaak overschat worden, maar voor uw organisatie nu niet direct relevant zijn:", y, M, CW);
@@ -195,10 +195,10 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
   // ============= ACTIES =============
   doc.addPage();
   y = pageHeader(doc, "Concrete vervolgstappen");
-  y = drawEyebrow(doc, "Actie — begin hier", y, M);
+  y = drawEyebrow(doc, "Actie · begin hier", y, M);
   y = drawHeading(doc, "5 acties op maat", y, M, CW);
   y += 4;
-  y = drawBody(doc, `Een mix van quick wins, compliance en strategische acties — afgestemd op uw volwassenheidsniveau (${report.maturityLabel.toLowerCase()}).`, y, M, CW);
+  y = drawBody(doc, `Een mix van quick wins, compliance en strategische acties, afgestemd op uw volwassenheidsniveau (${report.maturityLabel.toLowerCase()}).`, y, M, CW);
   y += 8;
 
   report.acties.forEach((a, i) => {
@@ -253,7 +253,7 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
 
   doc.setFontSize(10);
   doc.setTextColor(255, 255, 255);
-  const exp = doc.splitTextToSize("In 30 minuten vertalen wij dit rapport naar een concrete aanpak voor uw organisatie. Geen verplichtingen, geen verkoopgesprek — wel duidelijkheid.", CW - 20);
+  const exp = doc.splitTextToSize("In 30 minuten vertalen wij dit rapport naar een concrete aanpak voor uw organisatie. Geen verplichtingen, geen verkoopgesprek, wel duidelijkheid.", CW - 20);
   doc.text(exp, M, H / 2 + 18);
 
   // CTA box
