@@ -47,11 +47,11 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
         <div className="max-w-6xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
           <img src={actRightLogo} alt="Act Right" className="h-9" />
           <div className="flex items-center gap-3">
-            <Button onClick={onRestart} variant="ghost" size="sm" className="text-muted-foreground hidden sm:inline-flex lowercase">
-              <RefreshCcw className="h-4 w-4 mr-2" /> opnieuw
+            <Button onClick={onRestart} variant="ghost" size="sm" className="text-muted-foreground hidden sm:inline-flex">
+              <RefreshCcw className="h-4 w-4 mr-2" /> Opnieuw
             </Button>
-            <Button onClick={handleDownload} size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground btn-pill lowercase">
-              <Download className="h-4 w-4 mr-2" /> pdf
+            <Button onClick={handleDownload} size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground btn-pill">
+              <Download className="h-4 w-4 mr-2" /> PDF
             </Button>
           </div>
         </div>
@@ -169,14 +169,14 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
               Plan een gratis ESG Discovery Call met Act Right. In 30 minuten vertalen we deze quickscan naar een concrete aanpak voor uw situatie.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button onClick={handleDiscoveryCall} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground h-13 px-7 font-semibold btn-pill lowercase">
+              <Button onClick={handleDiscoveryCall} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground h-13 px-7 font-semibold btn-pill">
                 <Calendar className="h-4 w-4 mr-2" />
-                plan discovery call
+                Plan Discovery Call
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
-              <Button onClick={handleDownload} size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 h-13 px-7 font-semibold btn-pill lowercase">
+              <Button onClick={handleDownload} size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 h-13 px-7 font-semibold btn-pill">
                 <Download className="h-4 w-4 mr-2" />
-                download pdf rapport
+                Download PDF rapport
               </Button>
             </div>
           </div>
