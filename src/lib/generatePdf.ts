@@ -9,14 +9,15 @@ declare module "jspdf" {
   }
 }
 
-// Brand colors (RGB) — matched to design tokens
-const PRIMARY = [21, 51, 38] as const;       // #153326 dark forest
-const PRIMARY_LIGHT = [42, 78, 60] as const;
-const ACCENT = [192, 152, 78] as const;      // gold
-const TEXT = [38, 47, 42] as const;
-const MUTED = [115, 122, 118] as const;
-const SOFT_BG = [248, 244, 235] as const;
-const BORDER = [225, 218, 200] as const;
+// Brand colors (RGB) — matched to actright.nl design tokens
+const PRIMARY = [56, 64, 38] as const;        // dark olive (HSL 72 22% 18%)
+const PRIMARY_LIGHT = [78, 86, 56] as const;
+const ACCENT = [197, 214, 61] as const;       // lime-yellow (HSL 66 65% 56%)
+const ACCENT_DARK = [122, 138, 26] as const;  // for text contrast on dark bg
+const TEXT = [38, 47, 32] as const;
+const MUTED = [115, 122, 110] as const;
+const SOFT_BG = [247, 247, 240] as const;     // cream/off-white
+const BORDER = [218, 220, 205] as const;
 const RED = [198, 60, 60] as const;
 const AMBER = [212, 145, 40] as const;
 const BLUE = [60, 110, 168] as const;
