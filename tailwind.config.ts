@@ -14,8 +14,8 @@ export default {
     },
       extend: {
       fontFamily: {
-        heading: ['Inter', 'system-ui', 'sans-serif'],
-        body: ['DM Sans', 'Inter', 'system-ui', 'sans-serif'],
+        heading: ['Funnel Display', 'system-ui', 'sans-serif'],
+        body: ['Funnel Sans', 'Funnel Display', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
