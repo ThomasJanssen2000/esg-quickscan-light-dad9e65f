@@ -1,4 +1,4 @@
-// ESG Quickscan Light — scoring engine
+// ESG Quickscan Light, scoring engine
 // Volledig op basis van Excel beslisregels + masterdatabase
 
 import { questions, type Question } from "@/data/questions";
@@ -29,7 +29,7 @@ export type TopicLabel =
   | "Marktstandaard / aanbevolen"
   | "Sectorspecifiek vervolgonderzoek"
   | "Monitoren / voorbereiden"
-  | "Mogelijk relevant – nadere toetsing aanbevolen"
+  | "Mogelijk relevant · nadere toetsing aanbevolen"
   | "Niet prioritair";
 
 export interface ScoredTopic {
@@ -79,7 +79,7 @@ const PRIORITY_LABELS: TopicLabel[] = [
   "Marktstandaard / aanbevolen",
   "Sectorspecifiek vervolgonderzoek",
   "Monitoren / voorbereiden",
-  "Mogelijk relevant – nadere toetsing aanbevolen",
+  "Mogelijk relevant · nadere toetsing aanbevolen",
 ];
 
 function labelRank(label: string): number {
@@ -198,7 +198,7 @@ export function calculateReport(answers: Answers, contact?: ContactInfo): ESGRep
     let label = bestLabel as TopicLabel;
     let uncertain = acc.uncertainty > 0;
     if (uncertain && label === "Nu verplicht") {
-      label = "Mogelijk relevant – nadere toetsing aanbevolen";
+      label = "Mogelijk relevant · nadere toetsing aanbevolen";
     }
     // Sectorspecifieke topics: alleen behouden als sector-trigger geactiveerd is (al gefiltered via rules)
 
@@ -287,10 +287,10 @@ export function calculateReport(answers: Answers, contact?: ContactInfo): ESGRep
     .map(t => t.theme.name);
 
   const summary = topThemes.length > 0
-    ? `Voor ${contact?.companyName || "uw organisatie"} zien we vooral aandachtspunten op het gebied van ${topThemes.join(", ").toLowerCase()}. Uw belangrijkste drijfveer is "${driver.toLowerCase()}" — daar stemmen we de prioriteiten op af.`
+    ? `Voor ${contact?.companyName || "uw organisatie"} zien we vooral aandachtspunten op het gebied van ${topThemes.join(", ").toLowerCase()}. Uw belangrijkste drijfveer is "${driver.toLowerCase()}", daar stemmen we de prioriteiten op af.`
     : `Voor ${contact?.companyName || "uw organisatie"} zien we beperkte directe ESG-druk. Een gerichte verkenning helpt om kansen en eerste stappen te bepalen.`;
 
-  // 10. Acties — mix volgens rapportlogica
+  // 10. Acties, mix volgens rapportlogica
   const acties = buildActions(nuRelevant, maturityLabel, driver);
 
   return {
@@ -311,12 +311,12 @@ export function calculateReport(answers: Answers, contact?: ContactInfo): ESGRep
 function buildActions(nuRelevant: ScoredTopic[], maturity: MaturityLabel, driver: string): string[] {
   const acts: string[] = [];
 
-  // Quick win — eerste "nu verplicht" of energie-onderwerp
+  // Quick win, eerste "nu verplicht" of energie-onderwerp
   const energy = nuRelevant.find(s => /energie/i.test(s.topic.subject));
   if (energy) {
-    acts.push(`Quick win: vraag een energie-scan aan voor ${energy.topic.subject.toLowerCase()} — vaak korte terugverdientijd én directe compliance.`);
+    acts.push(`Quick win: vraag een energie-scan aan voor ${energy.topic.subject.toLowerCase()}, vaak korte terugverdientijd én directe compliance.`);
   } else if (nuRelevant[0]) {
-    acts.push(`Quick win: pak ${nuRelevant[0].topic.subject} als eerste op — duidelijke wettelijke basis en snel te organiseren.`);
+    acts.push(`Quick win: pak ${nuRelevant[0].topic.subject} als eerste op, duidelijke wettelijke basis en snel te organiseren.`);
   } else {
     acts.push("Quick win: doe een ESG-nulmeting om uw startpunt en quick wins helder te krijgen.");
   }
@@ -347,7 +347,7 @@ function buildActions(nuRelevant: ScoredTopic[], maturity: MaturityLabel, driver
   // Strategisch
   const stratByMaturity: Record<MaturityLabel, string> = {
     "Startfase": "Strategisch: stel een ESG-routekaart op met 3-5 doelen voor de komende 12 maanden.",
-    "Basis op orde brengen": "Strategisch: leg eigenaarschap en governance vast — wijs een ESG-coördinator aan.",
+    "Basis op orde brengen": "Strategisch: leg eigenaarschap en governance vast, wijs een ESG-coördinator aan.",
     "Structureren": "Strategisch: kies een rapportagekader (VSME, GRI of CO2-Prestatieladder) en bouw daar processen omheen.",
     "Opschalen": "Strategisch: vertaal ESG-prestaties naar commerciële positionering en investeerderscommunicatie.",
   };
