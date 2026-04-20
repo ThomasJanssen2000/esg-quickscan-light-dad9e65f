@@ -13,7 +13,7 @@ interface Props {
 
 const labelMeta: Record<string, { color: string; icon: any; bg: string }> = {
   "Nu verplicht":                                       { color: "text-destructive", bg: "bg-destructive/10",        icon: AlertCircle },
-  "Hoog relevant via keten":                            { color: "text-accent",      bg: "bg-accent/15",              icon: CheckCircle2 },
+  "Hoog relevant via keten":                            { color: "text-primary",     bg: "bg-accent/20",              icon: CheckCircle2 },
   "Marktstandaard / aanbevolen":                        { color: "text-primary",     bg: "bg-primary/10",             icon: CheckCircle2 },
   "Sectorspecifiek vervolgonderzoek":                   { color: "text-info",        bg: "bg-blue-100",               icon: AlertCircle },
   "Monitoren / voorbereiden":                           { color: "text-warning",     bg: "bg-amber-100",              icon: Clock },
@@ -43,29 +43,26 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border/60 bg-card sticky top-0 z-30">
+      <header className="border-b border-border bg-card sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
           <img src={actRightLogo} alt="Act Right" className="h-9" />
           <div className="flex items-center gap-3">
-            <Button onClick={onRestart} variant="ghost" size="sm" className="text-muted-foreground hidden sm:inline-flex">
-              <RefreshCcw className="h-4 w-4 mr-2" /> Opnieuw
+            <Button onClick={onRestart} variant="ghost" size="sm" className="text-muted-foreground hidden sm:inline-flex lowercase">
+              <RefreshCcw className="h-4 w-4 mr-2" /> opnieuw
             </Button>
-            <Button onClick={handleDownload} size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Download className="h-4 w-4 mr-2" /> PDF
+            <Button onClick={handleDownload} size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground btn-pill lowercase">
+              <Download className="h-4 w-4 mr-2" /> pdf
             </Button>
           </div>
         </div>
       </header>
 
       {/* Hero summary */}
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="absolute inset-0 bg-soft pointer-events-none" />
-        <div className="absolute top-10 right-0 w-96 h-96 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
-
+      <section className="relative overflow-hidden border-b border-border bg-soft">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 py-16 lg:py-20 relative">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <p className="text-xs font-semibold tracking-[0.18em] uppercase text-accent mb-4">Uw ESG Quickscan Resultaat</p>
-            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl text-primary leading-[1.05] tracking-tight mb-4">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary/60 mb-4">Uw ESG Quickscan Resultaat</p>
+            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl text-primary leading-[1.05] tracking-tight mb-4 font-extrabold">
               {contact.companyName}
             </h1>
             <p className="text-sm text-muted-foreground tracking-wide mb-8">{report.profileType}</p>
@@ -75,9 +72,9 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
                 {report.summary}
               </p>
 
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-elegant min-w-[280px]">
-                <div className="text-xs font-semibold tracking-[0.18em] uppercase text-muted-foreground mb-3">Volwassenheid</div>
-                <div className="font-heading text-3xl text-primary mb-3">{report.maturityLabel}</div>
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-soft min-w-[280px]">
+                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Volwassenheid</div>
+                <div className="font-heading text-3xl text-primary mb-3 font-extrabold">{report.maturityLabel}</div>
                 <div className="flex gap-1.5 mb-3">
                   {[1, 2, 3, 4].map(i => (
                     <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= maturity.step ? maturity.color : "bg-muted"}`} />
@@ -150,40 +147,36 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
         >
           <div className="space-y-3">
             {report.acties.map((a, i) => (
-              <motion.div
+              <div
                 key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.06 }}
-                className="flex items-start gap-4 bg-card border border-border rounded-lg p-5 hover:border-accent/40 transition-colors"
+                className="flex items-start gap-4 bg-card border border-border rounded-lg p-5 hover:border-accent/60 transition-colors"
               >
-                <span className="font-heading text-2xl text-accent w-10 flex-shrink-0 leading-none">{String(i + 1).padStart(2, "0")}</span>
+                <span className="font-heading text-2xl text-primary/40 w-10 flex-shrink-0 leading-none font-extrabold">{String(i + 1).padStart(2, "0")}</span>
                 <p className="text-sm text-foreground leading-relaxed pt-1">{a}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </Section>
 
         {/* Discovery call CTA */}
         <section className="bg-hero rounded-2xl text-primary-foreground p-10 lg:p-14 shadow-elegant relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-accent/15 blur-3xl pointer-events-none" />
           <div className="relative max-w-3xl">
-            <p className="text-xs font-semibold tracking-[0.18em] uppercase text-accent mb-4">Volgende stap</p>
-            <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl leading-tight mb-4">
-              Wilt u weten wat dit concreet betekent voor <em className="text-accent" style={{ fontStyle: "italic" }}>uw</em> organisatie?
+            <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-4">Volgende stap</p>
+            <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl leading-tight mb-4 font-extrabold">
+              Wilt u weten wat dit concreet betekent voor <span className="text-accent">uw</span> organisatie?
             </h2>
             <p className="text-base text-primary-foreground/75 mb-8 leading-relaxed">
               Plan een gratis ESG Discovery Call met Act Right. In 30 minuten vertalen we deze quickscan naar een concrete aanpak voor uw situatie.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button onClick={handleDiscoveryCall} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground h-13 px-7 font-semibold">
+              <Button onClick={handleDiscoveryCall} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground h-13 px-7 font-semibold btn-pill lowercase">
                 <Calendar className="h-4 w-4 mr-2" />
-                Plan Discovery Call
+                plan discovery call
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
-              <Button onClick={handleDownload} size="lg" variant="outline" className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 h-13 px-7 font-semibold">
+              <Button onClick={handleDownload} size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 h-13 px-7 font-semibold btn-pill lowercase">
                 <Download className="h-4 w-4 mr-2" />
-                Download PDF rapport
+                download pdf rapport
               </Button>
             </div>
           </div>
@@ -193,8 +186,8 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
       <footer className="bg-primary text-primary-foreground/70 mt-10">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <img src={actRightLogo} alt="Act Right" className="h-8 brightness-0 invert opacity-90" />
-          <p className="text-xs tracking-wider uppercase text-accent/80">act responsible · act win-win · act now</p>
-          <a href="https://www.actright.nl" className="text-xs hover:text-accent transition-colors">www.actright.nl · info@actright.nl</a>
+          <p className="text-xs lowercase text-accent">act responsible · act win-win · act now</p>
+          <a href="https://www.actright.nl" className="text-xs hover:text-accent transition-colors lowercase">www.actright.nl · info@actright.nl</a>
         </div>
       </footer>
     </div>
@@ -205,8 +198,8 @@ function Section({ eyebrow, title, subtitle, children }: { eyebrow: string; titl
   return (
     <section>
       <div className="mb-8 max-w-3xl">
-        <p className="text-xs font-semibold tracking-[0.18em] uppercase text-accent mb-3">{eyebrow}</p>
-        <h2 className="font-heading text-3xl sm:text-4xl text-primary leading-tight tracking-tight mb-3">{title}</h2>
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary/60 mb-3">{eyebrow}</p>
+        <h2 className="font-heading text-3xl sm:text-4xl text-primary leading-tight tracking-tight mb-3 font-extrabold">{title}</h2>
         {subtitle && <p className="text-base text-muted-foreground leading-relaxed">{subtitle}</p>}
       </div>
       {children}
@@ -220,17 +213,17 @@ function TopicCard({ item, index, compact }: { item: ScoredTopic; index: number;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.04 }}
-      className="bg-card border border-border rounded-xl p-6 lg:p-7 shadow-card hover:shadow-soft transition-shadow"
+      transition={{ delay: index * 0.03 }}
+      className="bg-card border border-border rounded-xl p-6 lg:p-7 shadow-card hover:border-accent/60 transition-colors"
     >
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-start gap-4 min-w-0">
-          <span className="font-heading text-2xl text-accent flex-shrink-0 leading-none w-9">{String(index).padStart(2, "0")}</span>
+          <span className="font-heading text-2xl text-primary/40 flex-shrink-0 leading-none w-9 font-extrabold">{String(index).padStart(2, "0")}</span>
           <div className="min-w-0">
-            <h3 className="font-heading text-xl lg:text-2xl text-primary leading-tight mb-1.5">{item.topic.subject}</h3>
+            <h3 className="font-heading text-xl lg:text-2xl text-primary leading-tight mb-1.5 font-bold">{item.topic.subject}</h3>
             <div className="flex flex-wrap gap-2 mt-2">
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${meta.bg} ${meta.color}`}>
                 <Icon className="h-3 w-3" /> {item.label}
@@ -251,7 +244,7 @@ function TopicCard({ item, index, compact }: { item: ScoredTopic; index: number;
       )}
 
       {item.reasons.length > 0 && (
-        <div className="bg-accent-soft/40 border-l-2 border-accent pl-4 py-3 mb-3 rounded-r">
+        <div className="bg-accent/10 border-l-2 border-accent pl-4 py-3 mb-3 rounded-r">
           <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Waarom voor u relevant</p>
           <p className="text-sm text-foreground/80 leading-relaxed">{item.reasons[0]}</p>
         </div>
@@ -262,7 +255,7 @@ function TopicCard({ item, index, compact }: { item: ScoredTopic; index: number;
           href={item.topic.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-accent transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/70 transition-colors"
         >
           Meer informatie <ExternalLink className="h-3 w-3" />
         </a>
