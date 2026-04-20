@@ -54,11 +54,11 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b border-border/60 bg-card/80 backdrop-blur sticky top-0 z-30">
+      <header className="border-b border-border bg-card/90 backdrop-blur sticky top-0 z-30">
         <div className="max-w-3xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
           <img src={actRightLogo} alt="Act Right" className="h-9" />
-          <span className="text-xs font-medium tracking-wide text-muted-foreground tabular-nums">
-            Vraag <span className="text-primary font-semibold">{step + 1}</span> van {total}
+          <span className="text-xs font-medium text-muted-foreground tabular-nums lowercase">
+            vraag <span className="text-primary font-semibold">{step + 1}</span> van {total}
           </span>
         </div>
         <div className="h-1 bg-muted">
@@ -74,12 +74,12 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
+              transition={{ duration: 0.2 }}
             >
-              <span className="inline-block text-[11px] font-semibold tracking-[0.18em] uppercase text-accent mb-4">
+              <span className="inline-block text-xs font-semibold uppercase tracking-wider text-primary/60 mb-4">
                 {q.type === "multi" ? "Meerdere antwoorden mogelijk" : "Kies één antwoord"}
               </span>
-              <h2 className="font-heading text-3xl sm:text-4xl text-primary leading-tight tracking-tight mb-3">
+              <h2 className="font-heading text-3xl sm:text-4xl text-primary leading-tight tracking-tight mb-3 font-extrabold">
                 {q.question}
               </h2>
               {q.helper && (
@@ -95,10 +95,10 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
                     <button
                       key={opt.value}
                       onClick={() => q.type === "multi" ? toggleMulti(opt.value) : setSingle(opt.value)}
-                      className={`group flex items-center gap-4 text-left px-5 py-4 rounded-lg border transition-all ${
+                      className={`group flex items-center gap-4 text-left px-5 py-4 rounded-lg border-2 transition-all ${
                         selected
-                          ? "border-accent bg-accent/8 shadow-card"
-                          : "border-border bg-card hover:border-accent/50 hover:bg-accent/3"
+                          ? "border-accent bg-accent/10"
+                          : "border-border bg-card hover:border-accent/50"
                       }`}
                     >
                       <span className={`flex-shrink-0 h-5 w-5 ${q.type === "multi" ? "rounded" : "rounded-full"} border-2 flex items-center justify-center transition-colors ${
@@ -118,13 +118,13 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
         </div>
       </main>
 
-      <div className="border-t border-border/60 bg-card">
+      <div className="border-t border-border bg-card">
         <div className="max-w-3xl mx-auto px-6 lg:px-10 py-5 flex justify-between items-center">
-          <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-primary text-sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Vorige
+          <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-primary text-sm lowercase">
+            <ArrowLeft className="mr-2 h-4 w-4" /> vorige
           </Button>
-          <Button onClick={handleNext} disabled={!canProceed} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-11 px-6 rounded-md disabled:opacity-30 disabled:cursor-not-allowed">
-            {step === total - 1 ? "Bekijk mijn rapport" : "Volgende"}
+          <Button onClick={handleNext} disabled={!canProceed} className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-11 px-6 btn-pill disabled:opacity-30 disabled:cursor-not-allowed lowercase">
+            {step === total - 1 ? "bekijk mijn rapport" : "volgende"}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
