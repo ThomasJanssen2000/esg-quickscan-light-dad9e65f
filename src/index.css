@@ -2,49 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    /* Act Right brand: white bg, dark olive text, lime-yellow accent */
-    --background: 60 10% 98%;
-    --foreground: 70 20% 15%;
+    /* Act Right ESG Quickscan — premium consultancy palette
+       Donker groen, wit, subtiele goudaccenten */
+    --background: 40 30% 98%;
+    --foreground: 155 35% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 70 20% 15%;
+    --card-foreground: 155 35% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 70 20% 15%;
+    --popover-foreground: 155 35% 12%;
 
-    /* Dark olive — primary brand color */
-    --primary: 72 18% 18%;
-    --primary-foreground: 60 10% 98%;
+    /* Donker bosgroen — primary */
+    --primary: 155 45% 14%;
+    --primary-foreground: 40 30% 98%;
+    --primary-glow: 155 38% 22%;
 
-    /* Lime-yellow — Act Right accent */
-    --secondary: 66 62% 54%;
-    --secondary-foreground: 72 18% 12%;
+    /* Subtiel goud — accent */
+    --accent: 40 55% 55%;
+    --accent-foreground: 155 45% 14%;
+    --accent-soft: 40 50% 92%;
 
-    --muted: 60 8% 93%;
-    --muted-foreground: 70 8% 42%;
+    /* Diep bos voor secondary */
+    --secondary: 155 30% 95%;
+    --secondary-foreground: 155 45% 14%;
 
-    --accent: 66 62% 54%;
-    --accent-foreground: 72 18% 12%;
+    --muted: 40 15% 95%;
+    --muted-foreground: 155 12% 38%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 65% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 60 8% 88%;
-    --input: 60 8% 85%;
-    --ring: 66 62% 54%;
+    --success: 145 55% 35%;
+    --warning: 35 85% 50%;
+    --info: 205 75% 42%;
 
-    --radius: 0.5rem;
+    --border: 40 15% 88%;
+    --input: 40 15% 90%;
+    --ring: 40 55% 55%;
 
-    --font-heading: 'Inter', sans-serif;
-    --font-body: 'DM Sans', sans-serif;
+    --radius: 0.625rem;
 
-    /* Dark section — olive/charcoal for footer/CTA blocks */
-    --dark-bg: 72 18% 14%;
-    --dark-fg: 60 10% 92%;
+    --font-heading: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+
+    /* Premium gradients & shadows */
+    --gradient-hero: linear-gradient(135deg, hsl(155 45% 14%) 0%, hsl(155 50% 8%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(40 60% 60%) 0%, hsl(38 50% 48%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(40 30% 98%) 0%, hsl(40 25% 95%) 100%);
+    --shadow-elegant: 0 20px 50px -20px hsl(155 45% 14% / 0.18);
+    --shadow-soft: 0 4px 20px -4px hsl(155 45% 14% / 0.08);
+    --shadow-card: 0 1px 3px hsl(155 45% 14% / 0.06), 0 1px 2px hsl(155 45% 14% / 0.04);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -62,12 +74,33 @@
     @apply border-border;
   }
 
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    font-feature-settings: "ss01", "cv11";
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+    font-weight: 500;
+    letter-spacing: -0.02em;
   }
+}
+
+@layer utilities {
+  .font-heading { font-family: var(--font-heading); }
+  .font-body { font-family: var(--font-body); }
+  .bg-hero { background: var(--gradient-hero); }
+  .bg-gold { background: var(--gradient-gold); }
+  .bg-soft { background: var(--gradient-soft); }
+  .shadow-elegant { box-shadow: var(--shadow-elegant); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .text-gold { color: hsl(var(--accent)); }
+  .border-gold { border-color: hsl(var(--accent)); }
 }

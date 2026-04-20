@@ -3,44 +3,40 @@ import ESGIntro from "@/components/ESGIntro";
 import ESGQuestionnaire from "@/components/ESGQuestionnaire";
 import ESGLeadGate from "@/components/ESGLeadGate";
 import ESGReport from "@/components/ESGReport";
-import { calculateReport, type ESGReport as ESGReportType } from "@/lib/esgScoring";
-import type { ScanAnswers } from "@/lib/esgQuestions";
+import { calculateReport, type ESGReport as ESGReportType, type Answers, type ContactInfo } from "@/lib/esgEngine";
 
 type View = "intro" | "questionnaire" | "leadgate" | "report";
 
 export default function Index() {
   const [view, setView] = useState<View>("intro");
+  const [answers, setAnswers] = useState<Answers>({});
   const [report, setReport] = useState<ESGReportType | null>(null);
-  const [companyName, setCompanyName] = useState("");
-  const [contactName, setContactName] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
+  const [contact, setContact] = useState<ContactInfo | null>(null);
 
-  const handleComplete = (data: ScanAnswers) => {
-    const result = calculateReport(data);
-    setReport(result);
-    setCompanyName(data.companyName);
+  const handleComplete = (a: Answers) => {
+    setAnswers(a);
+    setReport(calculateReport(a));
     setView("leadgate");
     window.scrollTo(0, 0);
   };
 
-  const handleLeadSubmit = (name: string, email: string) => {
-    setContactName(name);
-    setContactEmail(email);
+  const handleLeadSubmit = (c: ContactInfo) => {
+    setContact(c);
+    setReport(calculateReport(answers, c));
     setView("report");
     window.scrollTo(0, 0);
   };
 
   const handleRestart = () => {
     setView("intro");
+    setAnswers({});
     setReport(null);
-    setCompanyName("");
-    setContactName("");
-    setContactEmail("");
+    setContact(null);
     window.scrollTo(0, 0);
   };
 
   if (view === "questionnaire") return <ESGQuestionnaire onComplete={handleComplete} onBack={() => setView("intro")} />;
-  if (view === "leadgate") return <ESGLeadGate companyName={companyName} onSubmit={handleLeadSubmit} onBack={() => setView("questionnaire")} />;
-  if (view === "report" && report) return <ESGReport report={report} companyName={companyName} contactName={contactName} contactEmail={contactEmail} onRestart={handleRestart} />;
+  if (view === "leadgate") return <ESGLeadGate onSubmit={handleLeadSubmit} onBack={() => setView("questionnaire")} />;
+  if (view === "report" && report && contact) return <ESGReport report={report} contact={contact} onRestart={handleRestart} />;
   return <ESGIntro onStart={() => setView("questionnaire")} />;
 }
