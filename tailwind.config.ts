@@ -14,8 +14,8 @@ export default {
     },
       extend: {
       fontFamily: {
-        heading: ['Inter', 'sans-serif'],
-        body: ['DM Sans', 'sans-serif'],
+        heading: ['Fraunces', 'Georgia', 'serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
