@@ -18,8 +18,8 @@ export default function ESGIntro({ onStart }: Props) {
       <header className="border-b border-border/60 bg-background/90 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
           <img src={actRightLogo} alt="Act Right — for a better future" className="h-9 sm:h-10" />
-          <span className="hidden sm:inline-flex items-center gap-2 text-xs font-medium text-muted-foreground lowercase">
-            esg quickscan light
+          <span className="hidden sm:inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            ESG Quickscan Light
           </span>
         </div>
       </header>
@@ -27,9 +27,9 @@ export default function ESGIntro({ onStart }: Props) {
       <section className="relative overflow-hidden bg-soft">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 pt-20 pb-24 lg:pt-28 lg:pb-32 relative">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/15 border border-accent/30 text-xs font-semibold text-primary mb-8 lowercase">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/15 border border-accent/30 text-xs font-semibold text-primary mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-              gratis esg quickscan voor mkb
+              Gratis ESG Quickscan voor MKB
             </span>
 
             <h1 className="font-heading text-5xl sm:text-6xl lg:text-7xl text-primary leading-[1.05] tracking-tight mb-6 font-extrabold">
@@ -41,8 +41,8 @@ export default function ESGIntro({ onStart }: Props) {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-12">
-              <Button onClick={onStart} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground h-14 px-8 text-base font-semibold btn-pill group lowercase">
-                start gratis esg quickscan
+              <Button onClick={onStart} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground h-14 px-8 text-base font-semibold btn-pill group">
+                Start gratis ESG Quickscan
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               <span className="text-sm text-muted-foreground">⏱ ±5 minuten · geen verplichtingen</span>
@@ -65,9 +65,9 @@ export default function ESGIntro({ onStart }: Props) {
       <section className="border-y border-border bg-card">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { num: "20", label: "gerichte vragen", sub: "afgestemd op MKB-praktijk" },
-            { num: "89+", label: "ESG-onderwerpen", sub: "wetten, frameworks & standaarden" },
-            { num: "5 min", label: "tot uw rapport", sub: "direct bruikbaar" },
+            { num: "20", label: "Gerichte vragen", sub: "Afgestemd op MKB-praktijk" },
+            { num: "89+", label: "ESG-onderwerpen", sub: "Wetten, frameworks & standaarden" },
+            { num: "5 min", label: "Tot uw rapport", sub: "Direct bruikbaar" },
           ].map((s) => (
             <div key={s.label} className="flex items-baseline gap-4">
               <span className="font-heading text-4xl text-primary font-extrabold">{s.num}</span>
@@ -111,8 +111,8 @@ export default function ESGIntro({ onStart }: Props) {
           <p className="text-base text-primary-foreground/70 mb-10 max-w-xl mx-auto">
             5 minuten. Een rapport op maat. Direct bruikbaar in uw volgende klant- of directiegesprek.
           </p>
-          <Button onClick={onStart} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground h-14 px-8 text-base font-semibold btn-pill group lowercase">
-            start gratis esg quickscan
+          <Button onClick={onStart} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground h-14 px-8 text-base font-semibold btn-pill group">
+            Start gratis ESG Quickscan
             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
           </Button>
         </div>

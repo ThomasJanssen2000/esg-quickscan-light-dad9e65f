@@ -57,8 +57,8 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
       <header className="border-b border-border bg-card/90 backdrop-blur sticky top-0 z-30">
         <div className="max-w-3xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
           <img src={actRightLogo} alt="Act Right" className="h-9" />
-          <span className="text-xs font-medium text-muted-foreground tabular-nums lowercase">
-            vraag <span className="text-primary font-semibold">{step + 1}</span> van {total}
+          <span className="text-xs font-medium text-muted-foreground tabular-nums">
+            Vraag <span className="text-primary font-semibold">{step + 1}</span> van {total}
           </span>
         </div>
         <div className="h-1 bg-muted">
@@ -120,11 +120,11 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
 
       <div className="border-t border-border bg-card">
         <div className="max-w-3xl mx-auto px-6 lg:px-10 py-5 flex justify-between items-center">
-          <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-primary text-sm lowercase">
-            <ArrowLeft className="mr-2 h-4 w-4" /> vorige
+          <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-primary text-sm">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Vorige
           </Button>
-          <Button onClick={handleNext} disabled={!canProceed} className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-11 px-6 btn-pill disabled:opacity-30 disabled:cursor-not-allowed lowercase">
-            {step === total - 1 ? "bekijk mijn rapport" : "volgende"}
+          <Button onClick={handleNext} disabled={!canProceed} className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-11 px-6 btn-pill disabled:opacity-30 disabled:cursor-not-allowed">
+            {step === total - 1 ? "Bekijk mijn rapport" : "Volgende"}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
