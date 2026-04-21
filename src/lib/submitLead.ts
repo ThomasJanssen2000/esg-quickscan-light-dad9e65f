@@ -1,5 +1,11 @@
-// HubSpot Forms API v3 integratie voor ESG Quickscan Light
-// Zie .claude/skills/lead-webhook-hubspot/SKILL.md voor het volledige ontwerp.
+// HubSpot Forms API v3 integratie voor ESG Quickscan Light.
+// Zie .claude/skills/lead-webhook-hubspot/SKILL.md en scripts/hubspot-setup.ps1.
+//
+// Het HubSpot-form is aangemaakt met `legalConsentOptions.type = legitimate_interest`.
+// AVG-consent (required) en marketing-opt-in worden in onze eigen React-form
+// opgevangen; de opt-in landt in HubSpot als het custom property
+// `esg_marketing_optin` en kan via een HubSpot-workflow worden doorvertaald
+// naar een subscription.
 
 import type { Answers, ContactInfo, ESGReport } from "./esgEngine";
 
@@ -12,7 +18,7 @@ export type LeadSegment = "hot" | "warm" | "koud";
 
 /**
  * Bepaal hot/warm/koud op basis van bedrijfsomvang, ketendruk en
- * ESG-volwassenheid. Gebruikt door sales om follow-up te prioriteren.
+ * ESG-volwassenheid.
  */
 export function deriveLeadSegment(
   answers: Answers,
@@ -60,8 +66,7 @@ export type SubmitResult = { ok: true } | { ok: false; error: string };
 
 /**
  * POST de lead naar HubSpot Forms API v3. Faalt zachtjes: als HubSpot
- * onbereikbaar is moet de UX het rapport wél tonen (de gebruiker heeft
- * recht op hun rapport).
+ * onbereikbaar is toont Index.tsx het rapport tóch.
  */
 export async function submitLead(
   form: LeadFormData,
@@ -70,50 +75,38 @@ export async function submitLead(
 ): Promise<SubmitResult> {
   const portalId = import.meta.env.VITE_HUBSPOT_PORTAL_ID as string | undefined;
   const formGuid = import.meta.env.VITE_HUBSPOT_FORM_GUID as string | undefined;
-  const subscriptionIdRaw = import.meta.env.VITE_HUBSPOT_SUBSCRIPTION_ID as
-    | string
-    | undefined;
 
   if (!portalId || !formGuid) {
     return {
       ok: false,
       error:
-        "HubSpot niet geconfigureerd. Zet VITE_HUBSPOT_PORTAL_ID en VITE_HUBSPOT_FORM_GUID in .env.local.",
+        "HubSpot niet geconfigureerd. Run scripts/hubspot-setup.ps1 of zet VITE_HUBSPOT_PORTAL_ID en VITE_HUBSPOT_FORM_GUID handmatig in .env.local.",
     };
   }
 
   const segment = deriveLeadSegment(answers, report);
   const topThemes = topActiveThemeIds(report, 3);
   const scanDate = new Date().toISOString().slice(0, 10);
-  const subscriptionId = subscriptionIdRaw ? Number(subscriptionIdRaw) : undefined;
 
-  const fields: Array<{ objectTypeId: "0-1"; name: string; value: string }> = [
-    { objectTypeId: "0-1", name: "email", value: form.email },
-    { objectTypeId: "0-1", name: "firstname", value: form.firstName },
-    { objectTypeId: "0-1", name: "lastname", value: form.lastName },
-    { objectTypeId: "0-1", name: "company", value: form.companyName },
-    { objectTypeId: "0-1", name: "phone", value: form.phone ?? "" },
-    { objectTypeId: "0-1", name: "numemployees", value: form.employees ?? "" },
-    { objectTypeId: "0-1", name: "esg_sector", value: (answers["Q03"] as string) ?? "" },
-    { objectTypeId: "0-1", name: "esg_maturity_label", value: report.maturityLabel },
-    { objectTypeId: "0-1", name: "esg_lead_segment", value: segment },
-    { objectTypeId: "0-1", name: "esg_top_themes", value: topThemes },
-    { objectTypeId: "0-1", name: "esg_primary_driver", value: report.primaryDriver },
-    { objectTypeId: "0-1", name: "esg_scan_date", value: scanDate },
+  const fields = [
+    { objectTypeId: "0-1" as const, name: "email", value: form.email },
+    { objectTypeId: "0-1" as const, name: "firstname", value: form.firstName },
+    { objectTypeId: "0-1" as const, name: "lastname", value: form.lastName },
+    { objectTypeId: "0-1" as const, name: "company", value: form.companyName },
+    { objectTypeId: "0-1" as const, name: "phone", value: form.phone ?? "" },
+    { objectTypeId: "0-1" as const, name: "numemployees", value: form.employees ?? "" },
+    { objectTypeId: "0-1" as const, name: "esg_sector", value: (answers["Q03"] as string) ?? "" },
+    { objectTypeId: "0-1" as const, name: "esg_maturity_label", value: report.maturityLabel },
+    { objectTypeId: "0-1" as const, name: "esg_lead_segment", value: segment },
+    { objectTypeId: "0-1" as const, name: "esg_top_themes", value: topThemes },
+    { objectTypeId: "0-1" as const, name: "esg_primary_driver", value: report.primaryDriver },
+    { objectTypeId: "0-1" as const, name: "esg_scan_date", value: scanDate },
+    {
+      objectTypeId: "0-1" as const,
+      name: "esg_marketing_optin",
+      value: form.subscribeToUpdates ? "true" : "false",
+    },
   ];
-
-  const communications =
-    subscriptionId !== undefined
-      ? [
-          {
-            value: form.subscribeToUpdates,
-            subscriptionTypeId: subscriptionId,
-            text:
-              "Ik ontvang graag maximaal 1 keer per maand relevante ESG-updates, " +
-              "whitepapers en uitnodigingen van Act Right.",
-          },
-        ]
-      : [];
 
   const body = {
     fields,
@@ -121,15 +114,6 @@ export async function submitLead(
       pageUri: typeof window !== "undefined" ? window.location.href : undefined,
       pageName: "ESG Quickscan Light",
       hutk: readHubspotCookie(),
-    },
-    legalConsentOptions: {
-      consent: {
-        consentToProcess: true,
-        text:
-          "Ik ga akkoord met de verwerking van mijn gegevens volgens de " +
-          "privacyverklaring van Act Right, om mijn ESG-rapport te ontvangen.",
-        communications,
-      },
     },
   };
 
