@@ -8,6 +8,7 @@
 // naar een subscription.
 
 import type { Answers, ContactInfo, ESGReport } from "./esgEngine";
+import { HUBSPOT_FORM_GUID, HUBSPOT_PORTAL_ID } from "@/config/hubspot";
 
 export type LeadFormData = ContactInfo & {
   consentProcessing: boolean;
@@ -73,14 +74,14 @@ export async function submitLead(
   answers: Answers,
   report: ESGReport
 ): Promise<SubmitResult> {
-  const portalId = import.meta.env.VITE_HUBSPOT_PORTAL_ID as string | undefined;
-  const formGuid = import.meta.env.VITE_HUBSPOT_FORM_GUID as string | undefined;
+  const portalId = HUBSPOT_PORTAL_ID;
+  const formGuid = HUBSPOT_FORM_GUID;
 
   if (!portalId || !formGuid) {
     return {
       ok: false,
       error:
-        "HubSpot niet geconfigureerd. Run scripts/hubspot-setup.ps1 of zet VITE_HUBSPOT_PORTAL_ID en VITE_HUBSPOT_FORM_GUID handmatig in .env.local.",
+        "HubSpot niet geconfigureerd. Controleer src/config/hubspot.ts.",
     };
   }
 
