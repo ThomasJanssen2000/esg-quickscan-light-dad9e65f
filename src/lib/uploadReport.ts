@@ -1,7 +1,10 @@
 // Upload het gegenereerde ESG-rapport (PDF) naar Supabase Storage.
-// De bucket is privé; we generen een signed URL met lange geldigheid die als
-// esg_report_url naar HubSpot gestuurd wordt. Zo kan Act Right vanuit elk
-// HubSpot-contact de PDF openen, zonder dat de bucket publiek doorzoekbaar is.
+//
+// De bucket is publiek maar de paden bevatten een UUID, waardoor URLs
+// onvindbaar zijn zonder de directe link. Listing is uitgeschakeld (geen
+// anon SELECT-policy), dus anon-clients kunnen niet door de bucket bladeren.
+// De publieke URL landt als esg_report_url op het HubSpot-contact zodat
+// Act Right vanuit elk contact direct de PDF kan openen.
 //
 // Faalt zachtjes: als de upload mislukt (netwerkfout, Supabase down) toont
 // Index.tsx het rapport tóch aan de klant en stuurt een lead naar HubSpot
@@ -16,12 +19,8 @@ export type UploadResult =
 
 const BUCKET = "esg-reports";
 
-// 10 jaar geldigheid voor de signed URL: lang genoeg voor opvolging vanuit
-// HubSpot, maar nog altijd een beperkt token i.p.v. een publieke URL.
-const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 365 * 10;
-
 /**
- * Upload een PDF-blob naar de privé-bucket en geef een signed URL terug.
+ * Upload een PDF-blob naar de publieke bucket en geef de publieke URL terug.
  *
  * Bestandspad: `YYYY/MM/{uuid}.pdf` — volledig opake naam, geen bedrijfsnaam
  * of e-mailadres in het pad. Dit voorkomt dat metadata (klantnaam) lekt via
@@ -29,8 +28,9 @@ const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 365 * 10;
  */
 export async function uploadReportPdf(
   pdfBlob: Blob,
-  // ContactInfo blijft in de signature voor backwards-compatibility, maar wordt
-  // bewust NIET meer in het bestandspad verwerkt om PII-leakage te voorkomen.
+  // ContactInfo blijft in de signature voor backwards-compatibility, maar
+  // wordt bewust NIET meer in het bestandspad verwerkt om PII-leakage te
+  // voorkomen.
   _contact: ContactInfo
 ): Promise<UploadResult> {
   const now = new Date();
@@ -50,18 +50,16 @@ export async function uploadReportPdf(
       return { ok: false, error: error.message };
     }
 
-    const { data, error: signErr } = await supabase.storage
-      .from(BUCKET)
-      .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
+    // Public bucket: getPublicUrl retourneert een direct-accessible URL.
+    // Geen extra API-call nodig (in tegenstelling tot createSignedUrl op
+    // een private bucket, wat SELECT-rechten vereist).
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
 
-    if (signErr || !data?.signedUrl) {
-      return {
-        ok: false,
-        error: signErr?.message ?? "Kon signed URL niet aanmaken",
-      };
+    if (!data?.publicUrl) {
+      return { ok: false, error: "Kon public URL niet bepalen" };
     }
 
-    return { ok: true, url: data.signedUrl, path };
+    return { ok: true, url: data.publicUrl, path };
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
