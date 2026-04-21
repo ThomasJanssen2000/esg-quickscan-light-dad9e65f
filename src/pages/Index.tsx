@@ -12,9 +12,14 @@ import {
 } from "@/lib/esgEngine";
 import { submitLead, type LeadFormData } from "@/lib/submitLead";
 import { generateESGPdf } from "@/lib/generatePdf";
-import { uploadReportPdf } from "@/lib/uploadReport";
+import { uploadReportPdf, type UploadResult } from "@/lib/uploadReport";
 
 type View = "intro" | "questionnaire" | "leadgate" | "report";
+
+// Maximum tijd die we wachten op de Supabase-upload voordat we zonder URL
+// doorgaan naar HubSpot. We zien liever een HubSpot-contact zonder PDF-link
+// dan een klant die op een loader blijft hangen omdat de bucket ontbreekt.
+const UPLOAD_TIMEOUT_MS = 8000;
 
 export default function Index() {
   const [view, setView] = useState<View>("intro");
@@ -30,6 +35,8 @@ export default function Index() {
   };
 
   const handleLeadSubmit = async (form: LeadFormData) => {
+    console.log("[Quickscan] Start lead submit", { email: form.email });
+
     const contactInfo: ContactInfo = {
       firstName: form.firstName,
       lastName: form.lastName,
@@ -41,32 +48,56 @@ export default function Index() {
 
     const finalReport = calculateReport(answers, contactInfo);
 
-    // Genereer het PDF-rapport en upload een kopie naar Supabase Storage,
-    // zodat Act Right de exact-zelfde PDF kan openen vanuit het HubSpot-contact.
-    // Faalt zachtjes: als iets hier misgaat krijgt de gebruiker tóch het rapport.
+    // --- Stap 1: PDF genereren + uploaden naar Supabase Storage ---
+    // Met timeout zodat een hangende upload nooit de HubSpot-submit blokkeert.
     let reportUrl: string | undefined;
     try {
-      const pdfBlob = generateESGPdf(finalReport, contactInfo).output("blob") as Blob;
-      const upload = await uploadReportPdf(pdfBlob, contactInfo);
-      if (upload.ok) {
-        reportUrl = upload.url;
+      const uploadRace = Promise.race<UploadResult | "timeout">([
+        (async () => {
+          const pdfBlob = generateESGPdf(finalReport, contactInfo).output(
+            "blob"
+          ) as Blob;
+          console.log("[Quickscan] PDF blob gegenereerd, size:", pdfBlob.size);
+          return await uploadReportPdf(pdfBlob, contactInfo);
+        })(),
+        new Promise<"timeout">((resolve) =>
+          setTimeout(() => resolve("timeout"), UPLOAD_TIMEOUT_MS)
+        ),
+      ]);
+      const outcome = await uploadRace;
+      if (outcome === "timeout") {
+        console.warn(
+          "[Quickscan] Upload duurde > %dms, ga door zonder URL",
+          UPLOAD_TIMEOUT_MS
+        );
+      } else if (outcome.ok) {
+        reportUrl = outcome.url;
+        console.log("[Quickscan] Upload OK, URL:", outcome.url);
       } else {
-        console.error("[uploadReport]", upload.error);
+        console.error("[Quickscan] Upload faalde:", outcome.error);
       }
     } catch (e) {
-      console.error("[generatePdfBlob]", e);
+      console.error("[Quickscan] Fout in PDF-of-upload blok:", e);
     }
 
-    // Stuur de lead naar HubSpot, maar blokkeer het rapport niet als dat faalt.
-    const result = await submitLead(form, answers, finalReport, reportUrl);
-    if (result.ok === false) {
-      // Log voor ontwikkelaars, informeer gebruiker zonder paniek.
-      console.error("[submitLead]", result.error);
-      toast.error(
-        "We konden uw rapport niet automatisch opslaan, maar u kunt het hieronder direct inzien en downloaden."
-      );
+    // --- Stap 2: HubSpot-submit (MOET fire'n, ook als upload faalde) ---
+    console.log("[Quickscan] Submit naar HubSpot, reportUrl =", reportUrl);
+    try {
+      const result = await submitLead(form, answers, finalReport, reportUrl);
+      if (result.ok === false) {
+        console.error("[Quickscan] submitLead retourneerde fout:", result.error);
+        toast.error(
+          "We konden uw rapport niet automatisch opslaan, maar u kunt het hieronder direct inzien en downloaden."
+        );
+      } else {
+        console.log("[Quickscan] submitLead OK");
+      }
+    } catch (e) {
+      console.error("[Quickscan] submitLead gooide onverwachte fout:", e);
+      toast.error("Er ging iets mis bij het verzenden van uw gegevens.");
     }
 
+    // --- Stap 3: rapport tonen ---
     setContact(contactInfo);
     setReport(finalReport);
     setView("report");
@@ -82,10 +113,22 @@ export default function Index() {
   };
 
   if (view === "questionnaire")
-    return <ESGQuestionnaire onComplete={handleComplete} onBack={() => setView("intro")} />;
+    return (
+      <ESGQuestionnaire
+        onComplete={handleComplete}
+        onBack={() => setView("intro")}
+      />
+    );
   if (view === "leadgate")
-    return <ESGLeadGate onSubmit={handleLeadSubmit} onBack={() => setView("questionnaire")} />;
+    return (
+      <ESGLeadGate
+        onSubmit={handleLeadSubmit}
+        onBack={() => setView("questionnaire")}
+      />
+    );
   if (view === "report" && report && contact)
-    return <ESGReport report={report} contact={contact} onRestart={handleRestart} />;
+    return (
+      <ESGReport report={report} contact={contact} onRestart={handleRestart} />
+    );
   return <ESGIntro onStart={() => setView("questionnaire")} />;
 }
