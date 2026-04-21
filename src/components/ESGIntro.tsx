@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Clock, Shield, FileText } from "lucide-react";
 import actRightLogo from "@/assets/actright-logo.png";
+import ESGDisclaimer from "@/components/ESGDisclaimer";
 
 interface Props {
   onStart: () => void;
@@ -48,7 +49,7 @@ export default function ESGIntro({ onStart }: Props) {
               omvang en keten.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-12">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-6">
               <Button
                 onClick={onStart}
                 size="lg"
@@ -59,6 +60,8 @@ export default function ESGIntro({ onStart }: Props) {
               </Button>
               <span className="text-sm text-muted-foreground">⏱ ±5 minuten · geen verplichtingen</span>
             </div>
+
+            <ESGDisclaimer variant="compact" className="mb-12 max-w-2xl" />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 max-w-2xl">
               {benefits.map((b, i) => (

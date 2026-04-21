@@ -117,6 +117,31 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
   doc.text(matLines, M + 6, y + 26);
   y += 48;
 
+  // Disclaimer box: zichtbaar maken dat het rapport indicatief is.
+  const discHeight = 38;
+  doc.setFillColor(245, 243, 234); // zachte cream-tint, afwijkend van maturity-card
+  doc.roundedRect(M, y, CW, discHeight, 3, 3, "F");
+  doc.setDrawColor(...ACCENT_DARK);
+  doc.setLineWidth(0.6);
+  doc.line(M, y, M, y + discHeight);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...ACCENT_DARK);
+  doc.text("LET OP · INDICATIEF RAPPORT", M + 6, y + 8);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...TEXT);
+  const discLines = doc.splitTextToSize(
+    "Dit rapport is een indicatieve inschatting op basis van de 20 antwoorden die u heeft gegeven " +
+      "en is géén juridisch advies. Wettelijke drempels voor onderwerpen als CSRD, CSDDD, EU-ETS of " +
+      "energiebesparingsplicht hangen vaak af van details die een korte scan niet volledig kan uitvragen. " +
+      "Act Right adviseert om de toepasselijkheid van de genoemde onderwerpen zelf te verifiëren " +
+      "of met ons te bespreken voordat u compliance- of investeringsbesluiten neemt.",
+    CW - 12
+  );
+  doc.text(discLines, M + 6, y + 14);
+  y += discHeight + 10;
+
   // Theme scores
   y = drawEyebrow(doc, "02 · Actieve thema's", y, M);
   y = drawHeading(doc, "Welke ESG-thema's spelen voor u?", y, M, CW);

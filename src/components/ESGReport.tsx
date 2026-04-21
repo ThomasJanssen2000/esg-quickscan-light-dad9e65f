@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { ESGReport as ESGReportType, ScoredTopic, ContactInfo } from "@/lib/esgEngine";
 import { generateESGPdf } from "@/lib/generatePdf";
 import actRightLogo from "@/assets/actright-logo.png";
+import ESGDisclaimer from "@/components/ESGDisclaimer";
 
 interface Props {
   report: ESGReportType;
@@ -88,6 +89,8 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
       </section>
 
       <main className="max-w-6xl mx-auto px-6 lg:px-10 py-16 space-y-20">
+        <ESGDisclaimer variant="full" />
+
         {/* Wat nu relevant */}
         <Section
           eyebrow="01 · Direct relevant"
