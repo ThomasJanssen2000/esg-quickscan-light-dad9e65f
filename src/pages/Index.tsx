@@ -11,6 +11,8 @@ import {
   type ContactInfo,
 } from "@/lib/esgEngine";
 import { submitLead, type LeadFormData } from "@/lib/submitLead";
+import { generateESGPdf } from "@/lib/generatePdf";
+import { uploadReportPdf } from "@/lib/uploadReport";
 
 type View = "intro" | "questionnaire" | "leadgate" | "report";
 
@@ -39,8 +41,24 @@ export default function Index() {
 
     const finalReport = calculateReport(answers, contactInfo);
 
+    // Genereer het PDF-rapport en upload een kopie naar Supabase Storage,
+    // zodat Act Right de exact-zelfde PDF kan openen vanuit het HubSpot-contact.
+    // Faalt zachtjes: als iets hier misgaat krijgt de gebruiker tóch het rapport.
+    let reportUrl: string | undefined;
+    try {
+      const pdfBlob = generateESGPdf(finalReport, contactInfo).output("blob") as Blob;
+      const upload = await uploadReportPdf(pdfBlob, contactInfo);
+      if (upload.ok) {
+        reportUrl = upload.url;
+      } else {
+        console.error("[uploadReport]", upload.error);
+      }
+    } catch (e) {
+      console.error("[generatePdfBlob]", e);
+    }
+
     // Stuur de lead naar HubSpot, maar blokkeer het rapport niet als dat faalt.
-    const result = await submitLead(form, answers, finalReport);
+    const result = await submitLead(form, answers, finalReport, reportUrl);
     if (result.ok === false) {
       // Log voor ontwikkelaars, informeer gebruiker zonder paniek.
       console.error("[submitLead]", result.error);

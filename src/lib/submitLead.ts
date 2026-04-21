@@ -72,7 +72,8 @@ export type SubmitResult = { ok: true } | { ok: false; error: string };
 export async function submitLead(
   form: LeadFormData,
   answers: Answers,
-  report: ESGReport
+  report: ESGReport,
+  reportUrl?: string
 ): Promise<SubmitResult> {
   const portalId = HUBSPOT_PORTAL_ID;
   const formGuid = HUBSPOT_FORM_GUID;
@@ -89,25 +90,36 @@ export async function submitLead(
   const topThemes = topActiveThemeIds(report, 3);
   const scanDate = new Date().toISOString().slice(0, 10);
 
-  const fields = [
-    { objectTypeId: "0-1" as const, name: "email", value: form.email },
-    { objectTypeId: "0-1" as const, name: "firstname", value: form.firstName },
-    { objectTypeId: "0-1" as const, name: "lastname", value: form.lastName },
-    { objectTypeId: "0-1" as const, name: "company", value: form.companyName },
-    { objectTypeId: "0-1" as const, name: "phone", value: form.phone ?? "" },
-    { objectTypeId: "0-1" as const, name: "numemployees", value: form.employees ?? "" },
-    { objectTypeId: "0-1" as const, name: "esg_sector", value: (answers["Q03"] as string) ?? "" },
-    { objectTypeId: "0-1" as const, name: "esg_maturity_label", value: report.maturityLabel },
-    { objectTypeId: "0-1" as const, name: "esg_lead_segment", value: segment },
-    { objectTypeId: "0-1" as const, name: "esg_top_themes", value: topThemes },
-    { objectTypeId: "0-1" as const, name: "esg_primary_driver", value: report.primaryDriver },
-    { objectTypeId: "0-1" as const, name: "esg_scan_date", value: scanDate },
+  const fields: Array<{ objectTypeId: "0-1"; name: string; value: string }> = [
+    { objectTypeId: "0-1", name: "email", value: form.email },
+    { objectTypeId: "0-1", name: "firstname", value: form.firstName },
+    { objectTypeId: "0-1", name: "lastname", value: form.lastName },
+    { objectTypeId: "0-1", name: "company", value: form.companyName },
+    { objectTypeId: "0-1", name: "phone", value: form.phone ?? "" },
+    { objectTypeId: "0-1", name: "numemployees", value: form.employees ?? "" },
+    { objectTypeId: "0-1", name: "esg_sector", value: (answers["Q03"] as string) ?? "" },
+    { objectTypeId: "0-1", name: "esg_maturity_label", value: report.maturityLabel },
+    { objectTypeId: "0-1", name: "esg_lead_segment", value: segment },
+    { objectTypeId: "0-1", name: "esg_top_themes", value: topThemes },
+    { objectTypeId: "0-1", name: "esg_primary_driver", value: report.primaryDriver },
+    { objectTypeId: "0-1", name: "esg_scan_date", value: scanDate },
     {
-      objectTypeId: "0-1" as const,
+      objectTypeId: "0-1",
       name: "esg_marketing_optin",
       value: form.subscribeToUpdates ? "true" : "false",
     },
   ];
+
+  // Alleen meesturen als de upload gelukt is EN het form de property bevat.
+  // Zodra scripts/hubspot-setup.ps1 is gedraaid met esg_report_url, werkt dit
+  // automatisch voor elke submissie.
+  if (reportUrl) {
+    fields.push({
+      objectTypeId: "0-1",
+      name: "esg_report_url",
+      value: reportUrl,
+    });
+  }
 
   const body = {
     fields,
