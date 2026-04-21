@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { ContactInfo } from "@/lib/esgEngine";
+import type { LeadFormData } from "@/lib/submitLead";
 import actRightLogo from "@/assets/actright-logo.png";
 
 interface Props {
-  onSubmit: (contact: ContactInfo) => void;
+  onSubmit: (form: LeadFormData) => Promise<void> | void;
   onBack: () => void;
 }
 
@@ -22,10 +22,36 @@ export default function ESGLeadGate({ onSubmit, onBack }: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [employees, setEmployees] = useState("");
-  const [agreed, setAgreed] = useState(false);
+  const [consentProcessing, setConsentProcessing] = useState(false);
+  const [subscribeToUpdates, setSubscribeToUpdates] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const valid = firstName.trim() && lastName.trim() && companyName.trim() && isEmail && agreed;
+  const valid =
+    firstName.trim() &&
+    lastName.trim() &&
+    companyName.trim() &&
+    isEmail &&
+    consentProcessing;
+
+  const handleClick = async () => {
+    if (!valid || submitting) return;
+    setSubmitting(true);
+    try {
+      await onSubmit({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        companyName: companyName.trim(),
+        email: email.trim(),
+        phone: phone.trim() || undefined,
+        employees: employees || undefined,
+        consentProcessing: true,
+        subscribeToUpdates,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -76,26 +102,63 @@ export default function ESGLeadGate({ onSubmit, onBack }: Props) {
               </Field>
             </div>
 
-            <label className="mt-7 flex items-start gap-3 cursor-pointer">
-              <Checkbox checked={agreed} onCheckedChange={v => setAgreed(!!v)} className="mt-0.5" />
-              <span className="text-sm text-muted-foreground leading-relaxed">
-                Ik ga akkoord met de <a href="#" className="text-primary underline underline-offset-2 hover:text-primary/70">privacyverklaring</a> en geef Act Right toestemming om mij te benaderen over de uitkomsten.
-              </span>
-            </label>
+            <div className="mt-7 space-y-4">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <Checkbox
+                  checked={consentProcessing}
+                  onCheckedChange={v => setConsentProcessing(!!v)}
+                  className="mt-0.5"
+                  aria-label="Akkoord met verwerking"
+                />
+                <span className="text-sm text-muted-foreground leading-relaxed">
+                  Ik ga akkoord met de verwerking van mijn gegevens om het ESG-rapport te genereren en via e-mail te ontvangen. Lees de{" "}
+                  <a
+                    href="/privacyverklaring"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary underline underline-offset-2 hover:text-primary/70"
+                  >
+                    privacyverklaring
+                  </a>
+                  . *
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <Checkbox
+                  checked={subscribeToUpdates}
+                  onCheckedChange={v => setSubscribeToUpdates(!!v)}
+                  className="mt-0.5"
+                  aria-label="Aanmelden voor ESG-updates"
+                />
+                <span className="text-sm text-muted-foreground leading-relaxed">
+                  Ja, ik ontvang graag maximaal 1 keer per maand relevante ESG-updates, whitepapers en uitnodigingen van Act Right. Ik kan me op elk moment uitschrijven.
+                </span>
+              </label>
+            </div>
 
             <Button
-              onClick={() => valid && onSubmit({ firstName: firstName.trim(), lastName: lastName.trim(), companyName: companyName.trim(), email: email.trim(), phone: phone.trim() || undefined, employees: employees || undefined })}
-              disabled={!valid}
+              onClick={handleClick}
+              disabled={!valid || submitting}
               className="w-full mt-7 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold btn-pill disabled:opacity-30 text-base"
               style={{ height: "52px" }}
             >
-              Bekijk mijn rapport
-              <ArrowRight className="ml-2 h-5 w-5" />
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Rapport wordt gegenereerd…
+                </>
+              ) : (
+                <>
+                  Bekijk mijn rapport
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </>
+              )}
             </Button>
 
             <div className="mt-5 flex items-center gap-2 justify-center text-xs text-muted-foreground">
               <ShieldCheck className="h-4 w-4 text-primary" />
-              Uw gegevens worden vertrouwelijk behandeld en nooit gedeeld met derden.
+              Uw gegevens worden vertrouwelijk behandeld en maximaal 24 maanden bewaard.
             </div>
           </div>
 
