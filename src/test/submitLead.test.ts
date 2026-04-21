@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { calculateReport } from "@/lib/esgEngine";
-import { deriveLeadSegment, submitLead } from "@/lib/submitLead";
-import type { LeadFormData } from "@/lib/submitLead";
+import { deriveLeadSegment } from "@/lib/submitLead";
 import {
   kleinICTDienstverlening,
   middelgrootFoodProductie,
@@ -33,23 +32,14 @@ describe("deriveLeadSegment", () => {
   });
 });
 
-describe("submitLead environment guard", () => {
-  it("retourneert een nette error als HubSpot-env niet gezet is", async () => {
-    // In de test-omgeving zijn VITE_HUBSPOT_PORTAL_ID en _FORM_GUID niet gezet.
-    const form: LeadFormData = {
-      firstName: "Test",
-      lastName: "Gebruiker",
-      companyName: "Testbedrijf",
-      email: "test@example.com",
-      consentProcessing: true,
-      subscribeToUpdates: false,
-    };
-    const report = calculateReport(kleinICTDienstverlening);
-    const result = await submitLead(form, kleinICTDienstverlening, report);
-    // Ontbrekende config moet falen met een duidelijke melding, niet met een crash.
-    expect(result.ok).toBe(false);
-    if (result.ok === false) {
-      expect(result.error).toMatch(/HubSpot niet geconfigureerd/i);
-    }
+describe("HubSpot config", () => {
+  it("levert non-lege Portal ID en Form GUID zodat submitLead nooit zonder config draait", async () => {
+    const { HUBSPOT_PORTAL_ID, HUBSPOT_FORM_GUID } = await import(
+      "@/config/hubspot"
+    );
+    expect(HUBSPOT_PORTAL_ID).toMatch(/^\d{5,}$/);
+    expect(HUBSPOT_FORM_GUID).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    );
   });
 });

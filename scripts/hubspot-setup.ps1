@@ -17,6 +17,7 @@ $ErrorActionPreference = "Stop"
 $tokenPath = Join-Path $env:USERPROFILE ".hubspot-quickscan-token"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $envLocalPath = Join-Path $repoRoot ".env.local"
+$configPath = Join-Path $repoRoot "src\config\hubspot.ts"
 
 # --- Read token ---
 if (-not (Test-Path $tokenPath)) {
@@ -283,16 +284,51 @@ if (-not $formGuid) {
     Write-Host ("  +   Form aangemaakt: {0}" -f $formGuid) -ForegroundColor Green
 }
 
-# --- 4. .env.local ---
+# --- 4. Config-bestand schrijven ---
 Write-Host ""
-Write-Host "[4/4] .env.local schrijven..."
+Write-Host "[4/4] src/config/hubspot.ts bijwerken..."
+$configContent = @"
+// HubSpot Forms API v3 configuratie voor de ESG Quickscan Light.
+//
+// Auto-gegenereerd door scripts/hubspot-setup.ps1.
+// Deze IDs zijn NIET geheim - ze staan zichtbaar in elke HubSpot-embed-code
+// en zijn ontworpen om client-side gebruikt te worden. Ze committen is veilig.
+//
+// Overschrijven per omgeving:
+//   - Lokale dev: zet VITE_HUBSPOT_PORTAL_ID / VITE_HUBSPOT_FORM_GUID in .env.local
+//   - Productie: draai dit script opnieuw (bijv. tegen een ander HubSpot-portal)
+
+const envPortalId = import.meta.env.VITE_HUBSPOT_PORTAL_ID as
+  | string
+  | undefined;
+const envFormGuid = import.meta.env.VITE_HUBSPOT_FORM_GUID as
+  | string
+  | undefined;
+
+export const HUBSPOT_PORTAL_ID = envPortalId || "$portalId";
+export const HUBSPOT_FORM_GUID =
+  envFormGuid || "$formGuid";
+"@
+# BOM-vrije UTF-8 zodat TS-tooling niet kiebelt op lege regels
+[System.IO.File]::WriteAllText(
+    $configPath,
+    $configContent,
+    (New-Object System.Text.UTF8Encoding $false)
+)
+Write-Host ("  +   Geschreven: {0}" -f $configPath) -ForegroundColor Green
+
+# Voor lokale dev houden we ook .env.local bij (overschrijft config bij import.meta.env).
 $envLines = @(
     "# Auto-gegenereerd door scripts/hubspot-setup.ps1",
     "# Niet committen - staat in .gitignore via *.local.",
     "VITE_HUBSPOT_PORTAL_ID=$portalId",
     "VITE_HUBSPOT_FORM_GUID=$formGuid"
+) -join [Environment]::NewLine
+[System.IO.File]::WriteAllText(
+    $envLocalPath,
+    $envLines,
+    (New-Object System.Text.UTF8Encoding $false)
 )
-Set-Content -Path $envLocalPath -Value $envLines -Encoding UTF8
 Write-Host ("  +   Geschreven: {0}" -f $envLocalPath) -ForegroundColor Green
 
 Write-Host ""
