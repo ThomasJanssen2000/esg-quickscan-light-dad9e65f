@@ -41,7 +41,7 @@ export default function Index() {
 
     // Stuur de lead naar HubSpot, maar blokkeer het rapport niet als dat faalt.
     const result = await submitLead(form, answers, finalReport);
-    if (!result.ok) {
+    if (result.ok === false) {
       // Log voor ontwikkelaars, informeer gebruiker zonder paniek.
       console.error("[submitLead]", result.error);
       toast.error(

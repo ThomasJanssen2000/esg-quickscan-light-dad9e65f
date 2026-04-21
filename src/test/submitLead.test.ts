@@ -48,7 +48,7 @@ describe("submitLead environment guard", () => {
     const result = await submitLead(form, kleinICTDienstverlening, report);
     // Ontbrekende config moet falen met een duidelijke melding, niet met een crash.
     expect(result.ok).toBe(false);
-    if (!result.ok) {
+    if (result.ok === false) {
       expect(result.error).toMatch(/HubSpot niet geconfigureerd/i);
     }
   });
