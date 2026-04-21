@@ -75,7 +75,7 @@ export default function Index() {
       } else if (outcome.ok) {
         reportUrl = outcome.url;
         if (import.meta.env.DEV) console.log("[Quickscan] Upload OK");
-      } else {
+      } else if (outcome.ok === false) {
         if (import.meta.env.DEV)
           console.error("[Quickscan] Upload faalde:", outcome.error);
       }
