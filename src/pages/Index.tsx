@@ -35,7 +35,7 @@ export default function Index() {
   };
 
   const handleLeadSubmit = async (form: LeadFormData) => {
-    console.log("[Quickscan] Start lead submit", { email: form.email });
+    if (import.meta.env.DEV) console.log("[Quickscan] Start lead submit");
 
     const contactInfo: ContactInfo = {
       firstName: form.firstName,
@@ -57,7 +57,8 @@ export default function Index() {
           const pdfBlob = generateESGPdf(finalReport, contactInfo).output(
             "blob"
           ) as Blob;
-          console.log("[Quickscan] PDF blob gegenereerd, size:", pdfBlob.size);
+          if (import.meta.env.DEV)
+            console.log("[Quickscan] PDF blob gegenereerd, size:", pdfBlob.size);
           return await uploadReportPdf(pdfBlob, contactInfo);
         })(),
         new Promise<"timeout">((resolve) =>
@@ -66,34 +67,40 @@ export default function Index() {
       ]);
       const outcome = await uploadRace;
       if (outcome === "timeout") {
-        console.warn(
-          "[Quickscan] Upload duurde > %dms, ga door zonder URL",
-          UPLOAD_TIMEOUT_MS
-        );
+        if (import.meta.env.DEV)
+          console.warn(
+            "[Quickscan] Upload duurde > %dms, ga door zonder URL",
+            UPLOAD_TIMEOUT_MS
+          );
       } else if (outcome.ok) {
         reportUrl = outcome.url;
-        console.log("[Quickscan] Upload OK, URL:", outcome.url);
-      } else {
-        console.error("[Quickscan] Upload faalde:", outcome.error);
+        if (import.meta.env.DEV) console.log("[Quickscan] Upload OK");
+      } else if (outcome.ok === false) {
+        if (import.meta.env.DEV)
+          console.error("[Quickscan] Upload faalde:", outcome.error);
       }
     } catch (e) {
-      console.error("[Quickscan] Fout in PDF-of-upload blok:", e);
+      if (import.meta.env.DEV)
+        console.error("[Quickscan] Fout in PDF-of-upload blok:", e);
     }
 
     // --- Stap 2: HubSpot-submit (MOET fire'n, ook als upload faalde) ---
-    console.log("[Quickscan] Submit naar HubSpot, reportUrl =", reportUrl);
+    if (import.meta.env.DEV)
+      console.log("[Quickscan] Submit naar HubSpot");
     try {
       const result = await submitLead(form, answers, finalReport, reportUrl);
       if (result.ok === false) {
-        console.error("[Quickscan] submitLead retourneerde fout:", result.error);
+        if (import.meta.env.DEV)
+          console.error("[Quickscan] submitLead retourneerde fout:", result.error);
         toast.error(
           "We konden uw rapport niet automatisch opslaan, maar u kunt het hieronder direct inzien en downloaden."
         );
       } else {
-        console.log("[Quickscan] submitLead OK");
+        if (import.meta.env.DEV) console.log("[Quickscan] submitLead OK");
       }
     } catch (e) {
-      console.error("[Quickscan] submitLead gooide onverwachte fout:", e);
+      if (import.meta.env.DEV)
+        console.error("[Quickscan] submitLead gooide onverwachte fout:", e);
       toast.error("Er ging iets mis bij het verzenden van uw gegevens.");
     }
 
