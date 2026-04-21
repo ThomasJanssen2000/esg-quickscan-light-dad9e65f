@@ -158,6 +158,13 @@ $properties = @(
             @{ label = "Ja";  value = "true";  displayOrder = 0 },
             @{ label = "Nee"; value = "false"; displayOrder = 1 }
         )
+    },
+    @{
+        name        = "esg_report_url"
+        label       = "ESG Report URL"
+        type        = "string"
+        fieldType   = "text"
+        description = "Publieke link naar de PDF van het ESG-rapport (Supabase Storage). Gebruik deze link om het rapport van de klant te openen."
     }
 )
 
@@ -176,112 +183,146 @@ foreach ($p in $properties) {
 
 # --- 3. Form ---
 Write-Host ""
-Write-Host "[3/4] Form 'ESG Quickscan Light' aanmaken..."
+Write-Host "[3/4] Form 'ESG Quickscan Light' aanmaken/controleren..."
 
-$existingForms = Invoke-HSApi -Method GET -Path "/marketing/v3/forms/?limit=200"
-$formGuid = $null
-foreach ($f in $existingForms.results) {
-    if ($f.name -eq "ESG Quickscan Light") {
-        $formGuid = $f.id
-        Write-Host ("  =   Form bestaat al: {0}" -f $formGuid) -ForegroundColor DarkYellow
-        break
+# Desired state: alle velden die de form moet hebben.
+$baseValidation = @{ blockedEmailAddresses = @(); useDefaultBlockList = $false }
+function New-FormField {
+    param($FieldType, $Name, $Label, [bool]$Required, [bool]$Hidden)
+    return @{
+        fieldType    = $FieldType
+        objectTypeId = "0-1"
+        name         = $Name
+        label        = $Label
+        required     = $Required
+        hidden       = $Hidden
+        description  = ""
+        defaultValue = ""
+        placeholder  = ""
+        validation   = $baseValidation
+    }
+}
+$fields = @(
+    (New-FormField "email"            "email"               "Zakelijk e-mailadres" $true  $false),
+    (New-FormField "single_line_text" "firstname"           "Voornaam"             $true  $false),
+    (New-FormField "single_line_text" "lastname"            "Achternaam"           $true  $false),
+    (New-FormField "single_line_text" "company"             "Bedrijfsnaam"         $true  $false),
+    (New-FormField "phone"            "phone"               "Telefoonnummer"       $false $false),
+    (New-FormField "single_line_text" "numemployees"        "Aantal medewerkers"   $false $false),
+    (New-FormField "single_line_text" "esg_sector"          "ESG Sector"           $false $true),
+    (New-FormField "single_line_text" "esg_maturity_label"  "ESG Maturity"         $false $true),
+    (New-FormField "single_line_text" "esg_lead_segment"    "ESG Lead segment"     $false $true),
+    (New-FormField "single_line_text" "esg_top_themes"      "ESG Top themes"       $false $true),
+    (New-FormField "single_line_text" "esg_primary_driver"  "ESG Primary driver"   $false $true),
+    (New-FormField "single_line_text" "esg_scan_date"       "ESG Scan date"        $false $true),
+    (New-FormField "single_line_text" "esg_marketing_optin" "ESG Marketing opt-in" $false $true),
+    (New-FormField "single_line_text" "esg_report_url"      "ESG Report URL"       $false $true)
+)
+
+# HubSpot v3 Forms beperkt groepen tot max 3 velden. Dynamische chunking.
+$fieldGroups = @()
+for ($i = 0; $i -lt $fields.Count; $i += 3) {
+    $chunk = @()
+    $end = [Math]::Min($i + 3, $fields.Count)
+    for ($j = $i; $j -lt $end; $j++) { $chunk += $fields[$j] }
+    $fieldGroups += @{
+        groupType    = "default_group"
+        richTextType = "text"
+        fields       = $chunk
     }
 }
 
-if (-not $formGuid) {
-    $baseValidation = @{ blockedEmailAddresses = @(); useDefaultBlockList = $false }
-    function New-FormField {
-        param($FieldType, $Name, $Label, [bool]$Required, [bool]$Hidden)
-        return @{
-            fieldType    = $FieldType
-            objectTypeId = "0-1"
-            name         = $Name
-            label        = $Label
-            required     = $Required
-            hidden       = $Hidden
-            description  = ""
-            defaultValue = ""
-            placeholder  = ""
-            validation   = $baseValidation
-        }
+$formConfiguration = @{
+    language                    = "nl"
+    cloneable                   = $true
+    postSubmitAction            = @{ type = "thank_you"; value = "Bedankt. Uw rapport wordt geopend." }
+    editable                    = $true
+    archivable                  = $true
+    recaptchaEnabled            = $false
+    notifyContactOwner          = $false
+    notifyRecipients            = @()
+    createNewContactForNewEmail = $false
+    prePopulateKnownValues      = $true
+    allowLinkToResetKnownValues = $false
+    lifecycleStages             = @()
+}
+$formDisplay = @{
+    renderRawHtml    = $false
+    theme            = "default_style"
+    submitButtonText = "Bekijk mijn rapport"
+    style            = @{
+        fontFamily              = "arial, helvetica, sans-serif"
+        backgroundWidth         = "100%"
+        labelTextColor          = "#384026"
+        labelTextSize           = "13px"
+        helpTextColor           = "#7C98B6"
+        helpTextSize            = "11px"
+        legalConsentTextColor   = "#384026"
+        legalConsentTextSize    = "14px"
+        submitColor             = "#C5D63D"
+        submitAlignment         = "left"
+        submitFontColor         = "#384026"
+        submitSize              = "12px"
     }
-    $fields = @(
-        (New-FormField "email"            "email"               "Zakelijk e-mailadres" $true  $false),
-        (New-FormField "single_line_text" "firstname"           "Voornaam"             $true  $false),
-        (New-FormField "single_line_text" "lastname"            "Achternaam"           $true  $false),
-        (New-FormField "single_line_text" "company"             "Bedrijfsnaam"         $true  $false),
-        (New-FormField "phone"            "phone"               "Telefoonnummer"       $false $false),
-        (New-FormField "single_line_text" "numemployees"        "Aantal medewerkers"   $false $false),
-        (New-FormField "single_line_text" "esg_sector"          "ESG Sector"           $false $true),
-        (New-FormField "single_line_text" "esg_maturity_label"  "ESG Maturity"         $false $true),
-        (New-FormField "single_line_text" "esg_lead_segment"    "ESG Lead segment"     $false $true),
-        (New-FormField "single_line_text" "esg_top_themes"      "ESG Top themes"       $false $true),
-        (New-FormField "single_line_text" "esg_primary_driver"  "ESG Primary driver"   $false $true),
-        (New-FormField "single_line_text" "esg_scan_date"       "ESG Scan date"        $false $true),
-        (New-FormField "single_line_text" "esg_marketing_optin" "ESG Marketing opt-in" $false $true)
-    )
+    cssClass         = ""
+}
+# Legitimate interest met createdAt bleek schema-onvriendelijk in v3. 'none'
+# betekent hier: geen HubSpot-managed consent-block in dit form; onze eigen
+# React-UI vangt de AVG-consent op (required checkbox + aparte marketing
+# opt-in via esg_marketing_optin).
+$formLegal = @{ type = "none" }
 
+# Check bestaande form
+$existingForms = Invoke-HSApi -Method GET -Path "/marketing/v3/forms/?limit=200"
+$existingForm = $null
+foreach ($f in $existingForms.results) {
+    if ($f.name -eq "ESG Quickscan Light") { $existingForm = $f; break }
+}
+
+if (-not $existingForm) {
     $nowMs = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
     $formBody = @{
-        name        = "ESG Quickscan Light"
-        formType    = "hubspot"
-        archived    = $false
-        createdAt   = $nowMs
-        updatedAt   = $nowMs
-        # HubSpot v3 Forms beperkt groepen tot 3 velden. Splits in chunks.
-        fieldGroups = @(
-            @{ groupType = "default_group"; richTextType = "text"; fields = @($fields[0],  $fields[1],  $fields[2])  },
-            @{ groupType = "default_group"; richTextType = "text"; fields = @($fields[3],  $fields[4],  $fields[5])  },
-            @{ groupType = "default_group"; richTextType = "text"; fields = @($fields[6],  $fields[7],  $fields[8])  },
-            @{ groupType = "default_group"; richTextType = "text"; fields = @($fields[9],  $fields[10], $fields[11]) },
-            @{ groupType = "default_group"; richTextType = "text"; fields = @($fields[12])                           }
-        )
-        configuration = @{
-            language                    = "nl"
-            cloneable                   = $true
-            postSubmitAction            = @{ type = "thank_you"; value = "Bedankt. Uw rapport wordt geopend." }
-            editable                    = $true
-            archivable                  = $true
-            recaptchaEnabled            = $false
-            notifyContactOwner          = $false
-            notifyRecipients            = @()
-            createNewContactForNewEmail = $false
-            prePopulateKnownValues      = $true
-            allowLinkToResetKnownValues = $false
-            lifecycleStages             = @()
-        }
-        displayOptions = @{
-            renderRawHtml    = $false
-            theme            = "default_style"
-            submitButtonText = "Bekijk mijn rapport"
-            style            = @{
-                fontFamily              = "arial, helvetica, sans-serif"
-                backgroundWidth         = "100%"
-                labelTextColor          = "#384026"
-                labelTextSize           = "13px"
-                helpTextColor           = "#7C98B6"
-                helpTextSize            = "11px"
-                legalConsentTextColor   = "#384026"
-                legalConsentTextSize    = "14px"
-                submitColor             = "#C5D63D"
-                submitAlignment         = "left"
-                submitFontColor         = "#384026"
-                submitSize              = "12px"
-            }
-            cssClass         = ""
-        }
-        # Legitimate interest met createdAt bleek schema-onvriendelijk in v3.
-        # 'none' betekent hier: geen HubSpot-managed consent-block in dit form;
-        # onze eigen React-UI vangt de AVG-consent op (required checkbox +
-        # aparte marketing opt-in via esg_marketing_optin).
-        legalConsentOptions = @{
-            type = "none"
-        }
+        name                = "ESG Quickscan Light"
+        formType            = "hubspot"
+        archived            = $false
+        createdAt           = $nowMs
+        updatedAt           = $nowMs
+        fieldGroups         = $fieldGroups
+        configuration       = $formConfiguration
+        displayOptions      = $formDisplay
+        legalConsentOptions = $formLegal
     }
-
     $created = Invoke-HSApi -Method POST -Path "/marketing/v3/forms/" -Body $formBody
     $formGuid = $created.id
     Write-Host ("  +   Form aangemaakt: {0}" -f $formGuid) -ForegroundColor Green
+}
+else {
+    $formGuid = $existingForm.id
+    # Check welke velden al bestaan; PATCH alleen als er iets mist.
+    $existingFieldNames = @()
+    foreach ($g in $existingForm.fieldGroups) {
+        foreach ($fld in $g.fields) { $existingFieldNames += $fld.name }
+    }
+    $wantedNames = $fields | ForEach-Object { $_.name }
+    $missing = @()
+    foreach ($w in $wantedNames) {
+        if ($existingFieldNames -notcontains $w) { $missing += $w }
+    }
+
+    if ($missing.Count -eq 0) {
+        Write-Host ("  =   Form bestaat en is compleet: {0}" -f $formGuid) -ForegroundColor DarkYellow
+    }
+    else {
+        Write-Host ("  ~   Form bestaat maar mist velden: {0}" -f ($missing -join ', ')) -ForegroundColor Yellow
+        $patchBody = @{
+            fieldGroups         = $fieldGroups
+            configuration       = $formConfiguration
+            displayOptions      = $formDisplay
+            legalConsentOptions = $formLegal
+        }
+        Invoke-HSApi -Method PATCH -Path "/marketing/v3/forms/$formGuid" -Body $patchBody | Out-Null
+        Write-Host ("  +   Form bijgewerkt: {0}" -f $formGuid) -ForegroundColor Green
+    }
 }
 
 # --- 4. Config-bestand schrijven ---
