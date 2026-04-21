@@ -183,18 +183,51 @@ export function calculateReport(answers: Answers, contact?: ContactInfo): ESGRep
     const topic = topics.find(t => t.id === topicId);
     if (!topic) return;
 
-    // Pick best label by score
+    // Pick best label by score (rules stemmen voor hun preferredLabel).
     let bestLabel: string = topic.recommendedLabel || "Marktstandaard / aanbevolen";
     let bestLabelScore = -1;
     acc.labels.forEach((score, label) => {
       if (score > bestLabelScore) { bestLabelScore = score; bestLabel = label; }
     });
 
+    // CAP op de inherent nature van het topic.
+    //
+    // Probleem zonder cap: een rule kan een vrijwillige standaard (VSME, GRI,
+    // GHG Protocol, ISO 14001, B Corp, SBTi, CO2-Prestatieladder) promoveren
+    // tot "Nu verplicht" omdat de rule dat label kiest voor de trigger als
+    // geheel. Maar dat label is ook de wettelijke status-claim, en die is
+    // misleidend voor iets dat in de basis niet wettelijk verplicht is.
+    //
+    // Regel: een topic kan niet harder gelabeld worden dan zijn eigen
+    // `recommendedLabel` toestaat. Topics met recommendedLabel "Marktstandaard"
+    // eindigen maximaal op "Marktstandaard", ongeacht welke rule ze activeert.
+    // Topics met recommendedLabel "Nu verplicht" (echte wetten) kunnen wel
+    // zo blijven; rules kunnen ze niet ZWAARDER labelen dan dat.
+    const topicCap = topic.recommendedLabel || "Marktstandaard / aanbevolen";
+    if (labelRank(bestLabel) < labelRank(topicCap)) {
+      bestLabel = topicCap;
+    }
+
     let bestHorizon = topic.horizon || "Nu";
     let bestHorScore = -1;
     acc.horizons.forEach((c, h) => { if (c > bestHorScore) { bestHorScore = c; bestHorizon = h; } });
 
-    // Onzekerheidsregel: harde "Nu verplicht" claim afzwakken bij ontbrekende drempelinformatie
+    // Horizon-cap in dezelfde geest: een "Monitor"-topic kan niet door een rule
+    // naar "Nu" getrokken worden, en een "Binnen 1-3 jaar"-topic niet naar "Nu".
+    // We cappen op basis van een eenvoudige heuristiek tegen de topic-horizon.
+    if (topic.horizon) {
+      const topicIsMonitor = /monitor/i.test(topic.horizon);
+      const topicIsSoon = /1-3/.test(topic.horizon) && !/^\s*nu\b/i.test(topic.horizon);
+      if (topicIsMonitor && /^\s*nu\b/i.test(bestHorizon)) {
+        bestHorizon = topic.horizon;
+      } else if (topicIsSoon && /^\s*nu\s*$/i.test(bestHorizon.trim())) {
+        bestHorizon = topic.horizon;
+      }
+    }
+
+    // Onzekerheidsregel: "Nu verplicht" afzwakken bij ontbrekende drempelinformatie.
+    // Wordt na de cap toegepast; cappen gaat logisch eerst (vrijwillig blijft
+    // vrijwillig, ook bij zekerheid).
     let label = bestLabel as TopicLabel;
     let uncertain = acc.uncertainty > 0;
     if (uncertain && label === "Nu verplicht") {
