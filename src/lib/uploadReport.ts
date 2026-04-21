@@ -1,7 +1,7 @@
 // Upload het gegenereerde ESG-rapport (PDF) naar Supabase Storage.
-// De publieke URL wordt vervolgens als esg_report_url naar HubSpot gestuurd,
-// zodat Act Right vanuit elk contact het exact-zelfde PDF kan openen dat de
-// klant gedownload heeft.
+// De bucket is privé; we generen een signed URL met lange geldigheid die als
+// esg_report_url naar HubSpot gestuurd wordt. Zo kan Act Right vanuit elk
+// HubSpot-contact de PDF openen, zonder dat de bucket publiek doorzoekbaar is.
 //
 // Faalt zachtjes: als de upload mislukt (netwerkfout, Supabase down) toont
 // Index.tsx het rapport tóch aan de klant en stuurt een lead naar HubSpot
@@ -16,39 +16,28 @@ export type UploadResult =
 
 const BUCKET = "esg-reports";
 
-/** Korte, URL-veilige unieke suffix op basis van crypto.randomUUID. */
-function shortId(): string {
-  const uuid = crypto.randomUUID();
-  return uuid.replace(/-/g, "").slice(0, 12);
-}
-
-/** Slugify een string voor gebruik in een bestandsnaam. */
-function slug(s: string): string {
-  const cleaned = s
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 40);
-  return cleaned || "onbekend";
-}
+// 10 jaar geldigheid voor de signed URL: lang genoeg voor opvolging vanuit
+// HubSpot, maar nog altijd een beperkt token i.p.v. een publieke URL.
+const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 365 * 10;
 
 /**
- * Upload een PDF-blob naar de publieke bucket en geef de publieke URL terug.
+ * Upload een PDF-blob naar de privé-bucket en geef een signed URL terug.
  *
- * Bestandspad: `YYYY-MM-DDTHH-mm-ss_{bedrijf-slug}_{12-char-uuid}.pdf`
- * Het UUID-deel zorgt voor onvindbaarheid zonder link; het timestamp +
- * bedrijfs-slug maken het voor Act Right menselijk te herkennen als ze
- * direct in Supabase Storage kijken.
+ * Bestandspad: `YYYY/MM/{uuid}.pdf` — volledig opake naam, geen bedrijfsnaam
+ * of e-mailadres in het pad. Dit voorkomt dat metadata (klantnaam) lekt via
+ * de URL die in HubSpot zichtbaar is.
  */
 export async function uploadReportPdf(
   pdfBlob: Blob,
-  contact: ContactInfo
+  // ContactInfo blijft in de signature voor backwards-compatibility, maar wordt
+  // bewust NIET meer in het bestandspad verwerkt om PII-leakage te voorkomen.
+  _contact: ContactInfo
 ): Promise<UploadResult> {
-  const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-  const companySlug = slug(contact.companyName);
-  const path = `${stamp}_${companySlug}_${shortId()}.pdf`;
+  const now = new Date();
+  const yyyy = now.getUTCFullYear();
+  const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const id = crypto.randomUUID();
+  const path = `${yyyy}/${mm}/${id}.pdf`;
 
   try {
     const { error } = await supabase.storage.from(BUCKET).upload(path, pdfBlob, {
@@ -61,8 +50,18 @@ export async function uploadReportPdf(
       return { ok: false, error: error.message };
     }
 
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    return { ok: true, url: data.publicUrl, path };
+    const { data, error: signErr } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
+
+    if (signErr || !data?.signedUrl) {
+      return {
+        ok: false,
+        error: signErr?.message ?? "Kon signed URL niet aanmaken",
+      };
+    }
+
+    return { ok: true, url: data.signedUrl, path };
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
