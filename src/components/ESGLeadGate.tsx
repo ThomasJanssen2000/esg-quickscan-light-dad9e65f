@@ -69,7 +69,7 @@ export default function ESGLeadGate({ onSubmit, onBack }: Props) {
               <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
               Uw ESG-profiel is gereed
             </span>
-            <h1 className="font-heading text-4xl sm:text-5xl text-primary leading-tight tracking-tight mb-4 font-extrabold">
+            <h1 className="font-heading text-4xl sm:text-5xl text-primary leading-tight tracking-tight mb-4 font-bold">
               Uw ESG-profiel is <span className="text-primary/70">gereed</span>
             </h1>
             <p className="text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">

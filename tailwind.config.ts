@@ -51,6 +51,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        /* Act Right directe brand-utilities (naast semantic tokens) */
+        "pure-light": "#FFFEF6",
+        "adaptive-lime": "#E4E65F",
+        "resilient-moss": "#2C301C",
+        "moss-near-black": "#231F20",
+        "moss-dark": "#434B2B",
+        "lime-dark": "#919336",
+        "lime-cream": "#F9FADE",
+        sage: "#A0AF75",
+        "neutral-lavender": "#B9C0DA",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

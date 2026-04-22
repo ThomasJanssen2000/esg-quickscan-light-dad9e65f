@@ -12,21 +12,26 @@ interface Props {
   onRestart: () => void;
 }
 
+// Label-stijlen alleen nog met Act Right brand-tints. Geen rode/amber/blauwe
+// generic statuskleuren — de ernst-gradatie komt door moss -> lime-dark ->
+// sage -> lime-cream -> muted.
 const labelMeta: Record<string, { color: string; icon: any; bg: string }> = {
-  "Nu verplicht":                                       { color: "text-destructive", bg: "bg-destructive/10",        icon: AlertCircle },
-  "Hoog relevant via keten":                            { color: "text-primary",     bg: "bg-accent/20",              icon: CheckCircle2 },
-  "Marktstandaard / aanbevolen":                        { color: "text-primary",     bg: "bg-primary/10",             icon: CheckCircle2 },
-  "Sectorspecifiek vervolgonderzoek":                   { color: "text-info",        bg: "bg-blue-100",               icon: AlertCircle },
-  "Monitoren / voorbereiden":                           { color: "text-warning",     bg: "bg-amber-100",              icon: Clock },
-  "Mogelijk relevant – nadere toetsing aanbevolen":     { color: "text-warning",     bg: "bg-amber-50",               icon: AlertCircle },
-  "Niet prioritair":                                    { color: "text-muted-foreground", bg: "bg-muted",             icon: MinusCircle },
+  "Nu verplicht":                                       { color: "text-primary",         bg: "bg-primary/15",       icon: AlertCircle },
+  "Hoog relevant via keten":                            { color: "text-primary",         bg: "bg-accent/30",        icon: CheckCircle2 },
+  "Marktstandaard / aanbevolen":                        { color: "text-primary",         bg: "bg-lime-cream",       icon: CheckCircle2 },
+  "Sectorspecifiek vervolgonderzoek":                   { color: "text-primary",         bg: "bg-sage/25",          icon: AlertCircle },
+  "Monitoren / voorbereiden":                           { color: "text-primary",         bg: "bg-secondary",        icon: Clock },
+  "Mogelijk relevant – nadere toetsing aanbevolen":     { color: "text-primary",         bg: "bg-secondary",        icon: AlertCircle },
+  "Niet prioritair":                                    { color: "text-muted-foreground", bg: "bg-muted",           icon: MinusCircle },
 };
 
+// Maturity-progress in brand-tints: van amber warm -> lime-dark -> lime ->
+// moss (diepst). Niet langer generic "success/info" theme.
 const maturityProgress: Record<string, { step: number; color: string }> = {
-  "Startfase":               { step: 1, color: "bg-amber-500" },
-  "Basis op orde brengen":   { step: 2, color: "bg-info" },
+  "Startfase":               { step: 1, color: "bg-sage" },
+  "Basis op orde brengen":   { step: 2, color: "bg-lime-dark" },
   "Structureren":            { step: 3, color: "bg-accent" },
-  "Opschalen":               { step: 4, color: "bg-success" },
+  "Opschalen":               { step: 4, color: "bg-primary" },
 };
 
 export default function ESGReport({ report, contact, onRestart }: Props) {
@@ -63,7 +68,7 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
         <div className="max-w-6xl mx-auto px-6 lg:px-10 py-16 lg:py-20 relative">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <p className="text-xs font-semibold uppercase tracking-wider text-primary/60 mb-4">Uw ESG Quickscan Resultaat</p>
-            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl text-primary leading-[1.05] tracking-tight mb-4 font-extrabold">
+            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl text-primary leading-[1.05] tracking-tight mb-4 font-bold">
               {contact.companyName}
             </h1>
             <p className="text-sm text-muted-foreground tracking-wide mb-8">{report.profileType}</p>
@@ -75,7 +80,7 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
 
               <div className="bg-card border border-border rounded-2xl p-6 shadow-soft min-w-[280px]">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Volwassenheid</div>
-                <div className="font-heading text-3xl text-primary mb-3 font-extrabold">{report.maturityLabel}</div>
+                <div className="font-heading text-3xl text-primary mb-3 font-bold">{report.maturityLabel}</div>
                 <div className="flex gap-1.5 mb-3">
                   {[1, 2, 3, 4].map(i => (
                     <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= maturity.step ? maturity.color : "bg-muted"}`} />
@@ -154,7 +159,7 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
                 key={i}
                 className="flex items-start gap-4 bg-card border border-border rounded-lg p-5 hover:border-accent/60 transition-colors"
               >
-                <span className="font-heading text-2xl text-primary/40 w-10 flex-shrink-0 leading-none font-extrabold">{String(i + 1).padStart(2, "0")}</span>
+                <span className="font-heading text-2xl text-primary/40 w-10 flex-shrink-0 leading-none font-bold">{String(i + 1).padStart(2, "0")}</span>
                 <p className="text-sm text-foreground leading-relaxed pt-1">{a}</p>
               </div>
             ))}
@@ -165,7 +170,7 @@ export default function ESGReport({ report, contact, onRestart }: Props) {
         <section className="bg-hero rounded-2xl text-primary-foreground p-10 lg:p-14 shadow-elegant relative overflow-hidden">
           <div className="relative max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-4">Volgende stap</p>
-            <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl leading-tight mb-4 font-extrabold">
+            <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl leading-tight mb-4 font-bold">
               Wilt u weten wat dit concreet betekent voor <span className="text-accent">uw</span> organisatie?
             </h2>
             <p className="text-base text-primary-foreground/75 mb-8 leading-relaxed">
@@ -202,7 +207,7 @@ function Section({ eyebrow, title, subtitle, children }: { eyebrow: string; titl
     <section>
       <div className="mb-8 max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-wider text-primary/60 mb-3">{eyebrow}</p>
-        <h2 className="font-heading text-3xl sm:text-4xl text-primary leading-tight tracking-tight mb-3 font-extrabold">{title}</h2>
+        <h2 className="font-heading text-3xl sm:text-4xl text-primary leading-tight tracking-tight mb-3 font-bold">{title}</h2>
         {subtitle && <p className="text-base text-muted-foreground leading-relaxed">{subtitle}</p>}
       </div>
       {children}
@@ -224,7 +229,7 @@ function TopicCard({ item, index, compact }: { item: ScoredTopic; index: number;
     >
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-start gap-4 min-w-0">
-          <span className="font-heading text-2xl text-primary/40 flex-shrink-0 leading-none w-9 font-extrabold">{String(index).padStart(2, "0")}</span>
+          <span className="font-heading text-2xl text-primary/40 flex-shrink-0 leading-none w-9 font-bold">{String(index).padStart(2, "0")}</span>
           <div className="min-w-0">
             <h3 className="font-heading text-xl lg:text-2xl text-primary leading-tight mb-1.5 font-bold">{item.topic.subject}</h3>
             <div className="flex flex-wrap gap-2 mt-2">

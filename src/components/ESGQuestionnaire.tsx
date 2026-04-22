@@ -79,7 +79,7 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
               <span className="inline-block text-xs font-semibold uppercase tracking-wider text-primary/60 mb-4">
                 {q.type === "multi" ? "Meerdere antwoorden mogelijk" : "Kies één antwoord"}
               </span>
-              <h2 className="font-heading text-3xl sm:text-4xl text-primary leading-tight tracking-tight mb-3 font-extrabold">
+              <h2 className="font-heading text-3xl sm:text-4xl text-primary leading-tight tracking-tight mb-3 font-bold">
                 {q.question}
               </h2>
               {q.helper && (
@@ -104,7 +104,7 @@ export default function ESGQuestionnaire({ onComplete, onBack }: Props) {
                       <span className={`flex-shrink-0 h-5 w-5 ${q.type === "multi" ? "rounded" : "rounded-full"} border-2 flex items-center justify-center transition-colors ${
                         selected ? "border-accent bg-accent" : "border-muted-foreground/30 group-hover:border-accent/50"
                       }`}>
-                        {selected && <Check className="h-3 w-3 text-accent-foreground" strokeWidth={3} />}
+                        {selected && <Check className="h-3 w-3 text-accent-foreground" strokeWidth={2.25} />}
                       </span>
                       <span className={`text-[15px] ${selected ? "font-semibold text-primary" : "text-foreground"}`}>
                         {opt.label}

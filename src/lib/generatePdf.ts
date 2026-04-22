@@ -9,18 +9,22 @@ declare module "jspdf" {
   }
 }
 
-// Brand colors (RGB) — matched to actright.nl design tokens
-const PRIMARY = [56, 64, 38] as const;        // dark olive (HSL 72 22% 18%)
-const PRIMARY_LIGHT = [78, 86, 56] as const;
-const ACCENT = [197, 214, 61] as const;       // lime-yellow (HSL 66 65% 56%)
-const ACCENT_DARK = [122, 138, 26] as const;  // for text contrast on dark bg
-const TEXT = [38, 47, 32] as const;
-const MUTED = [115, 122, 110] as const;
-const SOFT_BG = [247, 247, 240] as const;     // cream/off-white
-const BORDER = [218, 220, 205] as const;
-const RED = [198, 60, 60] as const;
-const AMBER = [212, 145, 40] as const;
-const BLUE = [60, 110, 168] as const;
+// Canonieke Act Right brand colors (RGB) — zie
+// .claude/skills/act-right-huisstijl/SKILL.md voor rationale.
+// Afgeleid uit het officiele brandbook en gevalideerd tegen Office-theme.
+const PRIMARY      = [44, 48, 28]   as const; // Resilient Moss #2C301C
+const PRIMARY_LIGHT = [67, 75, 43]  as const; // Moss Dark #434B2B
+const ACCENT       = [228, 230, 95] as const; // Adaptive Lime #E4E65F
+const ACCENT_DARK  = [145, 147, 54] as const; // Lime Dark #919336 voor tekst-contrast op licht
+const TEXT         = [35, 31, 32]   as const; // Moss Near-Black #231F20
+const MUTED        = [160, 175, 117] as const; // Sage #A0AF75
+const SOFT_BG      = [255, 254, 246] as const; // Pure Light #FFFEF6
+const CREAM_DEEP   = [249, 250, 222] as const; // Lime-cream #F9FADE, accent-block background
+const BORDER       = [218, 220, 205] as const; // Subtiele moss-cream border (berekend)
+// Status-kleuren alleen nog voor echte errors; uit brand afgeleid waar mogelijk.
+const RED          = [198, 60, 60]  as const;
+const AMBER        = [145, 147, 54] as const; // Herleid naar lime-dark ipv feloranje
+const BLUE         = [160, 175, 117] as const; // Herleid naar sage ipv fel blauw
 
 export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
   const doc = new jsPDF("p", "mm", "a4");
@@ -30,62 +34,83 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
   const CW = W - M * 2;
 
   // ============= COVER =============
+  // Brandbook-stijl: moss-bg met lime-blok onderin waarin de titel staat.
+  // Zie .claude/skills/act-right-huisstijl/assets/act-right-brandbook.pdf
+  // pagina 17 ("CSRD 2025 Top Taste") voor het referentie-patroon.
+
+  // Basis: volledige moss-achtergrond.
   doc.setFillColor(...PRIMARY);
   doc.rect(0, 0, W, H, "F");
 
-  // Subtle gold corner accent
+  // Lime kleur-blok in onderste 35% — dit is waar titel + company komen.
+  const blockTop = H * 0.62;
   doc.setFillColor(...ACCENT);
-  doc.rect(0, 0, 60, 4, "F");
-  doc.setFillColor(...ACCENT);
-  doc.rect(W - 60, H - 4, 60, 4, "F");
+  doc.rect(0, blockTop, W, H - blockTop, "F");
 
-  // Logo / wordmark
+  // Logo/wordmark links bovenin: lime + cream voor inverted variant.
   doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(...ACCENT);
+  doc.text("act", M, 24);
+  doc.setTextColor(255, 254, 246); // Pure Light
+  doc.text("right", M + 10, 24); // vervolg van wordmark in cream
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(255, 254, 246);
+  doc.text("for a better future", M, 30);
+
+  // Report eyebrow iets onder het midden, in cream boven de lime-blok.
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...ACCENT);
+  doc.text("ESG QUICKSCAN LIGHT", M, blockTop - 30);
+
+  // Titel in cream boven de lime-blok
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(36);
+  doc.setTextColor(255, 254, 246);
+  doc.text("Uw persoonlijke", M, blockTop - 15);
+  doc.text("ESG-rapport.", M, blockTop - 2);
+
+  // Binnen het lime-blok: company name + profiel in moss.
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(...PRIMARY);
+  doc.text(contact.companyName, M, blockTop + 20);
+
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  doc.setTextColor(...ACCENT);
-  doc.text("ACT RIGHT", M, 28);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(255, 255, 255);
-  doc.text("for a better future", M, 33);
+  doc.setTextColor(...PRIMARY);
+  doc.text(report.profileType, M, blockTop + 28);
 
-  // Report category
+  // Recipient + datum onderin het lime-blok, in moss.
   doc.setFontSize(9);
-  doc.setTextColor(...ACCENT);
-  doc.text("ESG QUICKSCAN LIGHT", M, H / 2 - 35);
+  doc.setTextColor(...PRIMARY);
+  doc.text(
+    `Opgesteld voor: ${contact.firstName} ${contact.lastName}`,
+    M,
+    H - 20
+  );
+  doc.text(
+    `Datum: ${new Date().toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })}`,
+    W - M,
+    H - 20,
+    { align: "right" }
+  );
 
-  // Title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(34);
-  doc.setTextColor(255, 255, 255);
-  const titleLines = doc.splitTextToSize(`Uw persoonlijke\nESG-rapport`, CW);
-  doc.text(titleLines, M, H / 2 - 15);
-
-  // Company
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(16);
-  doc.setTextColor(255, 255, 255);
-  doc.text(contact.companyName, M, H / 2 + 25);
-
-  doc.setFontSize(10);
-  doc.setTextColor(...ACCENT);
-  doc.text(report.profileType, M, H / 2 + 33);
-
-  // Recipient
-  doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
-  doc.text(`Opgesteld voor: ${contact.firstName} ${contact.lastName}`, M, H - 50);
-  doc.text(`Datum: ${new Date().toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })}`, M, H - 44);
-
-  // Footer of cover
-  doc.setDrawColor(...ACCENT);
+  // Kleine taglijn-footer bovenaan het lime-blok — hairline in moss.
+  doc.setDrawColor(...PRIMARY);
   doc.setLineWidth(0.3);
-  doc.line(M, H - 30, W - M, H - 30);
-  doc.setFontSize(8);
-  doc.setTextColor(...ACCENT);
-  doc.text("act responsible · act win-win · act now", M, H - 22);
-  doc.setTextColor(255, 255, 255);
-  doc.text("www.actright.nl", W - M, H - 22, { align: "right" });
+  doc.line(M, blockTop + 38, W - M, blockTop + 38);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(...PRIMARY);
+  doc.text(
+    "act responsible   ·   act win-win   ·   act now",
+    M,
+    blockTop + 45
+  );
+  doc.text("www.actright.nl", W - M, blockTop + 45, { align: "right" });
 
   // ============= PAGE 2 — SAMENVATTING =============
   doc.addPage();

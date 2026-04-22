@@ -6,55 +6,63 @@
 
 @layer base {
   :root {
-    /* Act Right huisstijl — geïnspireerd op actright.nl
-       Donker olijfgroen primary, lime-yellow accent, cream/wit achtergrond */
-    --background: 60 25% 97%;
-    --foreground: 72 18% 14%;
+    /* Act Right huisstijl — canonical tokens uit het officiele brandbook.
+       Zie .claude/skills/act-right-huisstijl/SKILL.md voor bron en rationale.
+       Pure Light  #FFFEF6 = 52 100% 98%
+       Adaptive Lime #E4E65F = 61 72% 64%
+       Resilient Moss #2C301C = 72 26% 15%
+    */
+    --background: 52 100% 98%;
+    --foreground: 72 26% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 72 18% 14%;
+    /* Card iets rijker dan background voor zachte verhoging */
+    --card: 52 100% 98%;
+    --card-foreground: 72 26% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 72 18% 14%;
+    --popover: 52 100% 98%;
+    --popover-foreground: 72 26% 15%;
 
-    /* Donker olijfgroen — primary (actright.nl) */
-    --primary: 72 22% 18%;
-    --primary-foreground: 60 25% 97%;
-    --primary-glow: 72 18% 26%;
+    /* Resilient Moss — primary */
+    --primary: 72 26% 15%;
+    --primary-foreground: 52 100% 98%;
+    --primary-glow: 75 27% 23%;
 
-    /* Lime-yellow chartreuse — accent (actright.nl knoppen) */
-    --accent: 66 65% 56%;
-    --accent-foreground: 72 22% 14%;
-    --accent-soft: 66 60% 92%;
+    /* Adaptive Lime — accent */
+    --accent: 61 72% 64%;
+    --accent-foreground: 72 26% 15%;
+    /* Lime-cream #F9FADE voor zachte accent-achtergronden */
+    --accent-soft: 62 67% 93%;
 
-    --secondary: 72 12% 94%;
-    --secondary-foreground: 72 22% 18%;
+    /* Secondary/muted op zachte lime-cream basis ipv grijs */
+    --secondary: 62 67% 93%;
+    --secondary-foreground: 72 26% 15%;
 
-    --muted: 60 8% 94%;
-    --muted-foreground: 72 8% 42%;
+    --muted: 60 20% 92%;
+    --muted-foreground: 72 15% 38%;
 
     --destructive: 0 70% 48%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 52 100% 98%;
 
-    --success: 145 50% 35%;
-    --warning: 35 85% 50%;
-    --info: 205 70% 42%;
+    /* Status-tokens nu uit brand-afgeleide tints ipv generic blue/green */
+    --success: 75 27% 23%;            /* moss-dark */
+    --warning: 61 46% 39%;            /* lime-dark #919336 */
+    --info: 76 26% 57%;               /* sage #A0AF75 */
 
-    --border: 60 8% 88%;
-    --input: 60 8% 90%;
-    --ring: 66 65% 56%;
+    --border: 60 15% 86%;
+    --input: 60 15% 90%;
+    --ring: 61 72% 64%;
 
     --radius: 0.5rem;
 
     --font-heading: 'Funnel Display', system-ui, sans-serif;
     --font-body: 'Funnel Sans', 'Funnel Display', system-ui, sans-serif;
 
-    /* Subtiele gradients & shadows */
-    --gradient-hero: linear-gradient(135deg, hsl(72 22% 18%) 0%, hsl(72 25% 12%) 100%);
-    --gradient-soft: linear-gradient(180deg, hsl(60 25% 97%) 0%, hsl(60 20% 94%) 100%);
-    --shadow-elegant: 0 12px 40px -16px hsl(72 22% 18% / 0.15);
-    --shadow-soft: 0 2px 12px -2px hsl(72 22% 18% / 0.06);
-    --shadow-card: 0 1px 3px hsl(72 22% 18% / 0.05);
+    /* Gradients & shadows op canonieke moss */
+    --gradient-hero: linear-gradient(135deg, hsl(72 26% 15%) 0%, hsl(72 30% 10%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(52 100% 98%) 0%, hsl(62 67% 93%) 100%);
+    --shadow-elegant: 0 12px 40px -16px hsl(72 26% 15% / 0.15);
+    --shadow-soft: 0 2px 12px -2px hsl(72 26% 15% / 0.06);
+    --shadow-card: 0 1px 3px hsl(72 26% 15% / 0.05);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -86,7 +94,10 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     font-weight: 700;
-    letter-spacing: -0.02em;
+    /* Brandbook: Funnel Display spacing +10 (lichtjes open). Negatieve
+       tracking is niet on-brand; neutraal of lichte positieve tracking
+       is de merknorm. Per-element tracking-tight mag selectief. */
+    letter-spacing: 0;
   }
 }
 
