@@ -5,6 +5,7 @@ import * as FunnelDisplayBold from "@/assets/generated/funnel-display-bold";
 import * as FunnelSansLight from "@/assets/generated/funnel-sans-light";
 import * as FunnelSansRegular from "@/assets/generated/funnel-sans-regular";
 import { logoDataUrl } from "@/assets/generated/actright-logo-base64";
+import { logoWhiteDataUrl } from "@/assets/generated/actright-logo-white-base64";
 
 declare module "jspdf" {
   interface jsPDF {
@@ -114,10 +115,10 @@ function softPageBackground(doc: jsPDF) {
 function drawPageHeader(doc: jsPDF, sectionTitle: string) {
   const W = doc.internal.pageSize.getWidth();
   const M = 22;
-  // Minimal: klein logo links (aspect-ratio-correct) + dot + titel rechts.
-  // De dot komt VOOR de titel zodat ze nooit overlappen.
-  const { w: lw, h: lh } = logoSize(22);
-  doc.addImage(logoDataUrl, "PNG", M, 12, lw, lh);
+  // Logo iets groter (32mm breed ipv 22mm) zodat het merk zichtbaarder is.
+  // Dot komt VOOR de titel zodat ze nooit overlappen.
+  const { w: lw, h: lh } = logoSize(32);
+  doc.addImage(logoDataUrl, "PNG", M, 10, lw, lh);
 
   useBodyEm(doc, 8);
   doc.setCharSpace(0.4);
@@ -125,7 +126,7 @@ function drawPageHeader(doc: jsPDF, sectionTitle: string) {
   const rightEdge = W - M;
   const textW = doc.getTextWidth(label);
   const textLeft = rightEdge - textW;
-  const titleBaselineY = 12 + lh / 2 + 1.5; // verticaal uitgelijnd met logo
+  const titleBaselineY = 10 + lh / 2 + 1.5; // verticaal uitgelijnd met logo-centerlijn
 
   // Dot links van de titel, verticaal gecentreerd op dezelfde baseline
   doc.setFillColor(...ACCENT);
@@ -152,21 +153,15 @@ function drawCover(doc: jsPDF, report: ESGReport, contact: ContactInfo) {
   const H = doc.internal.pageSize.getHeight();
   const M = 22;
 
-  // Basis: moss-achtergrond
+  // Basis: volledig moss-achtergrond (geen cream-strook meer)
   doc.setFillColor(...PRIMARY);
   doc.rect(0, 0, W, H, "F");
 
-  // Cream-strook bovenaan voor het logo (zodat het PNG-logo op zijn natuurlijke
-  // achtergrond staat, niet ingedrukt op moss). Hoogte ruim genoeg voor
-  // een grotere, niet-uitgerekte logoafbeelding.
-  const logoWidth = 50;
-  const { h: logoH } = logoSize(logoWidth); // 50 / 1.415 ≈ 35.3mm
-  const creamStripHeight = logoH + 14; // 7mm top + logo + 7mm bottom
-  doc.setFillColor(...SOFT_BG);
-  doc.rect(0, 0, W, creamStripHeight, "F");
-
-  // Logo bovenaan, links uitgelijnd, in natuurlijke verhouding
-  doc.addImage(logoDataUrl, "PNG", M, 7, logoWidth, logoH);
+  // Wit logo (lime atoom + witte wordmark) helemaal bovenaan links.
+  // Grotere afmeting voor meer brand-presence.
+  const logoWidth = 68;
+  const { h: logoH } = logoSize(logoWidth); // 68 / 1.415 ≈ 48mm
+  doc.addImage(logoWhiteDataUrl, "PNG", M, 20, logoWidth, logoH);
 
   // Lime kleur-blok onderin ~36% voor company + profiel
   const blockTop = H * 0.64;
@@ -187,7 +182,6 @@ function drawCover(doc: jsPDF, report: ESGReport, contact: ContactInfo) {
   useHeading(doc, 42);
   doc.setTextColor(...SOFT_BG);
   const titleLines = doc.splitTextToSize("Uw persoonlijke\nESG-rapport.", W - M * 2);
-  const lh = 42 * 0.42;
   doc.text(titleLines, M, titleY + 16);
 
   // Binnen de lime-blok: company + profiel in moss
@@ -196,27 +190,27 @@ function drawCover(doc: jsPDF, report: ESGReport, contact: ContactInfo) {
   doc.setTextColor(...PRIMARY);
   doc.text(contact.companyName, M, companyY);
 
-  useBodyEm(doc, 11);
+  useBodyEm(doc, 12);
   doc.setTextColor(...PRIMARY);
-  doc.text(report.profileType, M, companyY + 8);
+  doc.text(report.profileType, M, companyY + 9);
 
-  // Onderin: recipient + datum
-  useBody(doc, 9);
+  // Onderin: recipient + datum (iets groter dan voorheen)
+  useBody(doc, 10.5);
   doc.setTextColor(...PRIMARY);
   doc.text(
     `Opgesteld voor  ·  ${contact.firstName} ${contact.lastName}`,
     M,
-    H - 22
+    H - 24
   );
   const datum = new Date().toLocaleDateString("nl-NL", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-  doc.text(datum, W - M, H - 22, { align: "right" });
+  doc.text(datum, W - M, H - 24, { align: "right" });
 
-  // Tiny tagline onderaan helemaal
-  useBody(doc, 7);
+  // Taglijn onderaan — ook iets groter voor leesbaarheid
+  useBodyEm(doc, 8.5);
   doc.setTextColor(...PRIMARY);
   doc.text(
     "act responsible   ·   act win-win   ·   act now",
@@ -319,31 +313,30 @@ function drawSummaryPage(doc: jsPDF, report: ESGReport, contact: ContactInfo) {
   });
 
   // ========= Disclaimer ONDERAAN de pagina =========
-  // Hard anchor op onderkant: bereken exact waar de disclaimer moet staan
-  // zodat er ~18mm ruimte onder staat voor footer.
-  const discH = 42;
+  // Compactere disclaimer (21mm) i.p.v. eerdere 42mm. Tekst ingekort zodat
+  // hij in max 2 regels past.
+  const discH = 24;
   const footerSafeY = H - 18;
   const discY = footerSafeY - discH;
 
   doc.setFillColor(...CREAM_DEEP);
-  doc.roundedRect(M, discY, CW, discH, 4, 4, "F");
+  doc.roundedRect(M, discY, CW, discH, 3.5, 3.5, "F");
   doc.setFillColor(...PRIMARY);
-  doc.circle(M + 10, discY + 9, 1.8, "F");
+  doc.circle(M + 10, discY + 8, 1.8, "F");
   useBodyEm(doc, 7.5);
   doc.setTextColor(...PRIMARY);
   doc.setCharSpace(0.4);
-  doc.text("LET OP   ·   INDICATIEF RAPPORT", M + 15, discY + 10);
+  doc.text("LET OP   ·   INDICATIEF RAPPORT", M + 15, discY + 9);
   doc.setCharSpace(0);
 
   useBody(doc, 8.5);
   doc.setTextColor(...TEXT);
   const discLines = doc.splitTextToSize(
-    "Dit rapport is een indicatieve inschatting op basis van de 20 antwoorden die u gaf en is géén juridisch advies. " +
-      "Wettelijke drempels voor CSRD, CSDDD, EU-ETS of energiebesparingsplicht hangen vaak af van details die een " +
-      "korte scan niet volledig uit kan vragen. Verifieer toepasselijkheid zelf of bespreek met Act Right.",
+    "Indicatieve inschatting op basis van uw 20 antwoorden; géén juridisch advies. " +
+      "Verifieer toepasselijkheid van de genoemde onderwerpen zelf of bespreek met Act Right voor compliance- of investeringsbesluiten.",
     CW - 20
   );
-  doc.text(discLines.slice(0, 4), M + 10, discY + 17);
+  doc.text(discLines.slice(0, 2), M + 10, discY + 15);
 }
 
 // ============= Topic card =============
@@ -496,6 +489,9 @@ function drawNotPriorityTile(
 }
 
 // ============= Action item =============
+// Actie-tekst heeft het patroon "Label: inhoudelijke beschrijving".
+// We splitsen op de eerste ":" en renderen label bold + body regular.
+// Nummer en label+body worden beide verticaal gecentreerd in hun box.
 function drawActionItem(
   doc: jsPDF,
   index: number,
@@ -504,66 +500,109 @@ function drawActionItem(
   M: number,
   CW: number
 ): number {
-  const boxH = 22;
-  // Lime-accent vierkantje links
+  // Split "Label: body" (kan "Label:" zonder body zijn in edge cases)
+  const colonIdx = text.indexOf(":");
+  const hasLabel = colonIdx > 0 && colonIdx < 30;
+  const label = hasLabel ? text.substring(0, colonIdx).trim() : "";
+  const body = hasLabel ? text.substring(colonIdx + 1).trim() : text;
+
+  // Bereken hoeveel body-regels we nodig hebben
+  const bodyWidth = CW - 16 - 10; // 10mm linker-padding binnen body-box
+  useBody(doc, 9.5);
+  const bodyLines = doc.splitTextToSize(body, bodyWidth);
+  const bodyLineCount = Math.min(3, bodyLines.length);
+
+  // Box-hoogte adaptief: min 22mm, groei met aantal body-regels
+  const labelBlockH = hasLabel ? 6 : 0; // extra ruimte voor bold label
+  const bodyBlockH = bodyLineCount * 4.6;
+  const contentH = labelBlockH + bodyBlockH;
+  const boxH = Math.max(22, contentH + 10); // 5mm padding boven + onder
+
+  // Lime-accent vierkantje links (nummer)
   doc.setFillColor(...ACCENT);
   doc.roundedRect(M, y, 14, boxH, 2, 2, "F");
+
+  // Nummer verticaal en horizontaal gecentreerd in het lime-vierkantje
   useHeading(doc, 16);
   doc.setTextColor(...PRIMARY);
-  doc.text(String(index).padStart(2, "0"), M + 7, y + 14, { align: "center" });
+  // Voor 16pt in een box van boxH hoogte: baseline op y + boxH/2 + ~5
+  // (het "+5" offset komt van cap-height / 2 in mm voor 16pt = ~2.8mm
+  // plus een subtiele optische correctie)
+  doc.text(
+    String(index).padStart(2, "0"),
+    M + 7,
+    y + boxH / 2 + 2.8,
+    { align: "center" }
+  );
 
   // Body-container
   doc.setDrawColor(...BORDER);
   doc.setLineWidth(0.2);
   doc.roundedRect(M + 16, y, CW - 16, boxH, 2, 2, "D");
+
+  // Label + body verticaal gecentreerd binnen de body-container
+  const textBlockStartY = y + (boxH - contentH) / 2;
+  const textLeft = M + 21;
+
+  if (hasLabel) {
+    useHeading(doc, 10);
+    doc.setTextColor(...PRIMARY);
+    doc.text(label, textLeft, textBlockStartY + 4.5);
+  }
+
   useBody(doc, 9.5);
   doc.setTextColor(...TEXT);
-  const lines = doc.splitTextToSize(text, CW - 22);
-  doc.text(lines.slice(0, 3), M + 21, y + 7);
+  doc.text(
+    bodyLines.slice(0, bodyLineCount),
+    textLeft,
+    textBlockStartY + labelBlockH + 4.5
+  );
 
   return y + boxH + 5;
 }
 
 // ============= CTA page =============
+const CONTACT_URL = "https://www.actright.nl/contact";
+
 function drawCtaPage(doc: jsPDF) {
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
   const M = 22;
 
+  // Volledig moss achtergrond (geen cream-strook meer)
   doc.setFillColor(...PRIMARY);
   doc.rect(0, 0, W, H, "F");
 
-  // Cream strook bovenaan voor het logo (aspect-ratio-correct)
-  const ctaLogoW = 50;
+  // Wit logo (lime atoom + witte wordmark) bovenaan links.
+  // Wat groter dan eerder voor matchende brand-presence met cover.
+  const ctaLogoW = 60;
   const { h: ctaLogoH } = logoSize(ctaLogoW);
-  doc.setFillColor(...SOFT_BG);
-  doc.rect(0, 0, W, ctaLogoH + 14, "F");
-  doc.addImage(logoDataUrl, "PNG", M, 7, ctaLogoW, ctaLogoH);
+  doc.addImage(logoWhiteDataUrl, "PNG", M, 20, ctaLogoW, ctaLogoH);
 
   // Accent dots-cluster rechtsboven voor "verbinding"-motief
   doc.setFillColor(...ACCENT);
-  doc.circle(W - 45, 60, 4, "F");
+  doc.circle(W - 45, 40, 4, "F");
   doc.setFillColor(...CREAM_DEEP);
-  doc.circle(W - 30, 75, 2.5, "F");
+  doc.circle(W - 30, 55, 2.5, "F");
   doc.setFillColor(...ACCENT_DARK);
-  doc.circle(W - 55, 85, 1.8, "F");
+  doc.circle(W - 55, 65, 1.8, "F");
 
-  // Eyebrow
-  drawEyebrow(doc, "Volgende stap", M, 90, ACCENT);
+  // Eyebrow iets onder het logo
+  drawEyebrow(doc, "Volgende stap", M, 95, ACCENT);
 
-  // Big headline
+  // Grote headline
   useHeading(doc, 40);
   doc.setTextColor(...SOFT_BG);
   const headLines = doc.splitTextToSize(
     "Klaar voor de\nvolgende stap?",
     W - M * 2
   );
-  doc.text(headLines, M, 112);
+  doc.text(headLines, M, 118);
 
-  // Explanation
+  // Uitleg
   useBody(doc, 11.5);
   doc.setTextColor(...ACCENT);
-  doc.text("Plan een gratis ESG discovery-call met Act Right.", M, 166);
+  doc.text("Plan een gratis ESG discovery-call met Act Right.", M, 172);
 
   useBody(doc, 10);
   doc.setTextColor(...SOFT_BG);
@@ -571,30 +610,40 @@ function drawCtaPage(doc: jsPDF) {
     "In 30 minuten vertalen we dit rapport naar een concrete aanpak voor uw organisatie. Geen verplichtingen, geen verkoopgesprek — wel duidelijkheid over wat nu echt telt voor uw MKB.",
     W - M * 2 - 10
   );
-  doc.text(explain, M, 175);
+  doc.text(explain, M, 181);
 
-  // CTA-button visual: pill-shape in lime met moss-tekst
-  const btnY = H / 2 + 40;
-  const btnW = 92;
-  const btnH = 16;
+  // CTA-button: pill in lime met moss-tekst.
+  // Horizontaal en verticaal correct gecentreerd via gemeten text-metrics.
+  const btnY = H / 2 + 50;
+  const btnW = 96;
+  const btnH = 18;
   doc.setFillColor(...ACCENT);
-  doc.roundedRect(M, btnY, btnW, btnH, 8, 8, "F");
-  useHeading(doc, 11);
+  doc.roundedRect(M, btnY, btnW, btnH, 9, 9, "F");
+
+  useHeading(doc, 12);
   doc.setTextColor(...PRIMARY);
-  doc.text("Plan discovery-call  →", M + btnW / 2, btnY + 10.5, { align: "center" });
+  const btnText = "Plan discovery-call  →";
+  // Verticale center: baseline = btn_center + font cap-height/2
+  // 12pt cap-height ≈ 4.2mm; center y = btnY + btnH/2; baseline ≈ center + 2
+  const btnCenterY = btnY + btnH / 2 + 2.1;
+  const btnCenterX = M + btnW / 2;
+  doc.text(btnText, btnCenterX, btnCenterY, { align: "center" });
 
-  // Footer met contact
-  useBody(doc, 9);
+  // Klikbare link over de button: naar Act Right contactformulier
+  doc.link(M, btnY, btnW, btnH, { url: CONTACT_URL });
+
+  // Footer met contact (links klikbaar)
+  useBody(doc, 10);
   doc.setTextColor(...SOFT_BG);
-  doc.text("www.actright.nl", M, H - 30);
-  doc.text("info@actright.nl", M, H - 23);
+  doc.textWithLink("www.actright.nl", M, H - 30, { url: "https://www.actright.nl" });
+  doc.textWithLink("info@actright.nl", M, H - 22, { url: "mailto:info@actright.nl" });
 
-  useBody(doc, 7.5);
+  useBodyEm(doc, 8);
   doc.setTextColor(...ACCENT);
   doc.text(
     "act responsible   ·   act win-win   ·   act now",
     W - M,
-    H - 23,
+    H - 22,
     { align: "right" }
   );
 }
