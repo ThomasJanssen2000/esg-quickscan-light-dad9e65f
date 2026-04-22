@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Review-exports (regenereren via scripts/export-to-excel.py)
+ESG-Quickscan-review.xlsx
+ESG-Quickscan-review-*.xlsx
