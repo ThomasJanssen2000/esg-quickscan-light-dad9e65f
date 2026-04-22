@@ -87,6 +87,28 @@ function labelRank(label: string): number {
   return idx === -1 ? 99 : idx;
 }
 
+/**
+ * Pijler-prioriteit voor de presentatie-volgorde van 'Nu relevant' in het
+ * rapport. Act Right heeft deze volgorde vastgesteld:
+ *   0 = multi-pijler (combinatie van 2 of 3 letters uit E/S/G)
+ *   1 = pure E (Environment)
+ *   2 = pure G (Governance)
+ *   3 = pure S (Social)
+ *  99 = onbekend/geen pijler gezet
+ */
+function pillarRank(pillar: string | undefined | null): number {
+  const p = (pillar ?? "").toUpperCase();
+  const hasE = /E/.test(p);
+  const hasS = /S/.test(p);
+  const hasG = /G/.test(p);
+  const distinctCount = (hasE ? 1 : 0) + (hasS ? 1 : 0) + (hasG ? 1 : 0);
+  if (distinctCount >= 2) return 0; // multi-pijler (E/S/G, E/S, G/E, etc.)
+  if (hasE) return 1;
+  if (hasG) return 2;
+  if (hasS) return 3;
+  return 99;
+}
+
 function isHorizonNow(h: string): boolean {
   return /^\s*nu\b/i.test(h.trim());
 }
@@ -303,9 +325,20 @@ export function calculateReport(answers: Answers, contact?: ContactInfo): ESGRep
     return b.score - a.score;
   });
 
+  // Eerst de top 5 selecteren op basis van label-prioriteit en score (zoals
+  // altijd), en dan binnen die 5 herschikken op ESG-pijler. Act Right wil een
+  // vaste presentatie-volgorde voor 'Nu relevant': multi-pijler onderwerpen
+  // eerst, dan pure E, dan pure G, dan pure S.
   const nuRelevant = sortedTopics
     .filter(s => isHorizonNow(s.horizon) && labelRank(s.label) <= 2)
-    .slice(0, 5);
+    .slice(0, 5)
+    .sort((a, b) => {
+      const pr = pillarRank(a.topic.esgPillar) - pillarRank(b.topic.esgPillar);
+      if (pr !== 0) return pr;
+      // Binnen dezelfde pijler-klasse valt de sort terug op de originele
+      // volgorde (label-rank + score), dankzij de stable sort.
+      return 0;
+    });
 
   const usedIds = new Set(nuRelevant.map(s => s.topic.id));
   const binnenkortRelevant = sortedTopics
