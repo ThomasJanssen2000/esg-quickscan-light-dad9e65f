@@ -208,6 +208,38 @@ export function calculateReport(answers: Answers, contact?: ContactInfo): ESGRep
       bestLabel = topicCap;
     }
 
+    // HARD VOLUNTARY BLOCK (extra defensie-laag):
+    //
+    // Zelfs als de recommendedLabel per ongeluk 'Nu verplicht' zou zijn (of een
+    // invalide/onbekende waarde die rank 99 krijgt en de cap onbedoeld faalt),
+    // moeten vrijwillige kaders en voorgestelde wetten NOOIT als 'Nu verplicht'
+    // uitkomen. We checken de metadata-velden (type, category, directIndirect)
+    // op expliciete signalen van vrijwilligheid of opkomst. Dit is Act Right's
+    // juridische garantie tegen false positive compliance-claims.
+    const voluntarySignals = [
+      topic.directIndirect ?? "",
+      topic.category ?? "",
+      topic.type ?? "",
+    ]
+      .join(" | ")
+      .toLowerCase();
+    const isVoluntaryOrProposed =
+      /vrijwillig/.test(voluntarySignals) ||
+      /opkomend/.test(voluntarySignals) ||
+      /voorgestelde/.test(voluntarySignals) ||
+      /beleidsontwikkeling/.test(voluntarySignals) ||
+      /private certificering/.test(voluntarySignals) ||
+      /marktstandaard/.test(voluntarySignals) ||
+      /internationaal normatief kader/.test(voluntarySignals);
+    if (isVoluntaryOrProposed && bestLabel === "Nu verplicht") {
+      // Neem topic's eigen recommendedLabel als die valide en niet-verplicht is,
+      // anders de veilige fallback.
+      const fallback = topic.recommendedLabel && topic.recommendedLabel !== "Nu verplicht"
+        ? topic.recommendedLabel
+        : "Marktstandaard / aanbevolen";
+      bestLabel = fallback;
+    }
+
     let bestHorizon = topic.horizon || "Nu";
     let bestHorScore = -1;
     acc.horizons.forEach((c, h) => { if (c > bestHorScore) { bestHorScore = c; bestHorizon = h; } });
@@ -235,13 +267,31 @@ export function calculateReport(answers: Answers, contact?: ContactInfo): ESGRep
     }
     // Sectorspecifieke topics: alleen behouden als sector-trigger geactiveerd is (al gefiltered via rules)
 
+    // Reasons-opbouw: combineer rule-phrasing (aansluiting op survey-antwoorden)
+    // met topic.whenRelevant (aansluiting op de wet/het raamwerk zelf). Dit
+    // levert twee-zins-uitleg die enerzijds uitlegt waarom dit topic getriggerd
+    // is op basis van de antwoorden, anderzijds wat de daadwerkelijke scope
+    // van het onderwerp is (inclusief eventuele "dit is vrijwillig"- of
+    // "nog niet van kracht"-nuance uit de bronnen).
+    const ruleReasons = Array.from(new Set(acc.reasons));
+    const topicNote = (topic.whenRelevant ?? "").trim();
+    const combinedReasons: string[] = [];
+    if (ruleReasons[0]) combinedReasons.push(ruleReasons[0]);
+    if (topicNote && !combinedReasons.includes(topicNote)) {
+      combinedReasons.push(topicNote);
+    }
+    // Fallback: als we geen topic-note hebben, behoud een tweede rule-reason.
+    if (combinedReasons.length < 2 && ruleReasons[1]) {
+      combinedReasons.push(ruleReasons[1]);
+    }
+
     scored.push({
       topic,
       score: acc.score,
       themeIds: Array.from(acc.themeIds),
       label,
       horizon: bestHorizon,
-      reasons: Array.from(new Set(acc.reasons)).slice(0, 2),
+      reasons: combinedReasons.slice(0, 2),
       uncertain,
     });
   });

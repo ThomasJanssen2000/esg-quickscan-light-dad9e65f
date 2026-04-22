@@ -249,7 +249,9 @@ function TopicCard({ item, index, compact }: { item: ScoredTopic; index: number;
       {item.reasons.length > 0 && (
         <div className="bg-accent/10 border-l-2 border-accent pl-4 py-3 mb-3 rounded-r">
           <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Waarom voor u relevant</p>
-          <p className="text-sm text-foreground/80 leading-relaxed">{item.reasons[0]}</p>
+          <p className="text-sm text-foreground/80 leading-relaxed">
+            {item.reasons.join(" ")}
+          </p>
         </div>
       )}
 
