@@ -25,6 +25,13 @@ const CREAM_DEEP   = [249, 250, 222] as const; // Lime-cream #F9FADE
 const SAGE         = [160, 175, 117] as const; // Sage #A0AF75
 const BORDER       = [218, 220, 205] as const;
 
+// Logo-afmetingen: natuurlijke ratio van actright-logo.png is 1920/1357 ≈ 1.415.
+// Gebruik deze ratio overal om stretching te voorkomen.
+const LOGO_RATIO = 1920 / 1357;
+function logoSize(widthMm: number): { w: number; h: number } {
+  return { w: widthMm, h: widthMm / LOGO_RATIO };
+}
+
 // Font registration names (match base64-module exports)
 const FONT_HEADING  = FunnelDisplayBold.jspdfName;   // "FunnelDisplay"
 const FONT_BODY     = FunnelSansLight.jspdfName;     // "FunnelSans"
@@ -107,17 +114,26 @@ function softPageBackground(doc: jsPDF) {
 function drawPageHeader(doc: jsPDF, sectionTitle: string) {
   const W = doc.internal.pageSize.getWidth();
   const M = 22;
-  // Minimal: geen volle gekleurde strip, alleen klein logo links + titel rechts
-  // met ruim whitespace eromheen. Geen zichtbare hairline.
-  doc.addImage(logoDataUrl, "PNG", M, 12, 28, 10);
-  useBodyEm(doc, 7.5);
-  doc.setTextColor(...MUTED);
+  // Minimal: klein logo links (aspect-ratio-correct) + dot + titel rechts.
+  // De dot komt VOOR de titel zodat ze nooit overlappen.
+  const { w: lw, h: lh } = logoSize(22);
+  doc.addImage(logoDataUrl, "PNG", M, 12, lw, lh);
+
+  useBodyEm(doc, 8);
   doc.setCharSpace(0.4);
-  doc.text(sectionTitle.toUpperCase(), W - M, 18, { align: "right" });
-  doc.setCharSpace(0);
-  // Zachte lime-accent puntje rechtsboven (niet een hele lijn)
+  const label = sectionTitle.toUpperCase();
+  const rightEdge = W - M;
+  const textW = doc.getTextWidth(label);
+  const textLeft = rightEdge - textW;
+  const titleBaselineY = 12 + lh / 2 + 1.5; // verticaal uitgelijnd met logo
+
+  // Dot links van de titel, verticaal gecentreerd op dezelfde baseline
   doc.setFillColor(...ACCENT);
-  doc.circle(W - M + 3, 17.5, 1.3, "F");
+  doc.circle(textLeft - 4, titleBaselineY - 1.2, 1.3, "F");
+
+  doc.setTextColor(...MUTED);
+  doc.text(label, rightEdge, titleBaselineY, { align: "right" });
+  doc.setCharSpace(0);
 }
 
 function drawPageFooter(doc: jsPDF, pageNum: number, total: number) {
@@ -141,13 +157,16 @@ function drawCover(doc: jsPDF, report: ESGReport, contact: ContactInfo) {
   doc.rect(0, 0, W, H, "F");
 
   // Cream-strook bovenaan voor het logo (zodat het PNG-logo op zijn natuurlijke
-  // achtergrond staat, niet ingedrukt op moss)
-  const creamStripHeight = 30;
+  // achtergrond staat, niet ingedrukt op moss). Hoogte ruim genoeg voor
+  // een grotere, niet-uitgerekte logoafbeelding.
+  const logoWidth = 50;
+  const { h: logoH } = logoSize(logoWidth); // 50 / 1.415 ≈ 35.3mm
+  const creamStripHeight = logoH + 14; // 7mm top + logo + 7mm bottom
   doc.setFillColor(...SOFT_BG);
   doc.rect(0, 0, W, creamStripHeight, "F");
 
-  // Logo bovenaan, horizontaal gecentreerd? Nee, editorial: links uitgelijnd.
-  doc.addImage(logoDataUrl, "PNG", M, 7, 55, 18);
+  // Logo bovenaan, links uitgelijnd, in natuurlijke verhouding
+  doc.addImage(logoDataUrl, "PNG", M, 7, logoWidth, logoH);
 
   // Lime kleur-blok onderin ~36% voor company + profiel
   const blockTop = H * 0.64;
@@ -207,7 +226,17 @@ function drawCover(doc: jsPDF, report: ESGReport, contact: ContactInfo) {
   doc.text("www.actright.nl", W - M, H - 14, { align: "right" });
 }
 
+// Maturity-mapping voor 4-stap voortgangsbar (matcht UI)
+const MATURITY_STEP: Record<string, number> = {
+  "Startfase": 1,
+  "Basis op orde brengen": 2,
+  "Structureren": 3,
+  "Opschalen": 4,
+};
+
 // ============= Summary page =============
+// Volgorde: intro-profiel → maturity-kaart (met 4-stap bar) → actieve
+// thema's → disclaimer helemaal onderaan. Alles op één pagina.
 function drawSummaryPage(doc: jsPDF, report: ESGReport, contact: ContactInfo) {
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
@@ -217,83 +246,112 @@ function drawSummaryPage(doc: jsPDF, report: ESGReport, contact: ContactInfo) {
 
   drawPageHeader(doc, "Samenvatting");
 
+  // ========= 01 · Uw ESG-profiel =========
   y = drawEyebrow(doc, "01  ·  Uw ESG-profiel", M, y);
-  y = drawHeading(doc, "Wat dit rapport u vertelt", M, y, CW, 22);
+  y = drawHeading(doc, "Wat dit rapport u vertelt", M, y, CW, 20);
   y += 3;
   y = drawBody(doc, report.summary, M, y, CW, 10);
-  y += 10;
+  y += 8;
 
-  // Maturity card: afgeronde lime-cream met moss-accent
-  const matH = 42;
+  // Maturity-kaart (onderdeel van "Uw ESG-profiel") met 4-stap voortgangsbar
+  const matH = 44;
+  const matPadX = 10;
   doc.setFillColor(...CREAM_DEEP);
   doc.roundedRect(M, y, CW, matH, 4, 4, "F");
-  // Lime-accent puntje links
+
+  // Eyebrow + dot links
   doc.setFillColor(...ACCENT);
-  doc.circle(M + 8, y + 10, 2, "F");
+  doc.circle(M + matPadX, y + 9, 1.8, "F");
   useBodyEm(doc, 7.5);
   doc.setTextColor(...ACCENT_DARK);
   doc.setCharSpace(0.4);
-  doc.text("VOLWASSENHEIDSLABEL", M + 14, y + 11);
+  doc.text("VOLWASSENHEIDSLABEL", M + matPadX + 5, y + 10);
   doc.setCharSpace(0);
 
-  useHeading(doc, 20);
+  // Maturity label groot + 4-stap voortgangsbar ernaast
+  useHeading(doc, 18);
   doc.setTextColor(...PRIMARY);
-  doc.text(report.maturityLabel, M + 8, y + 23);
+  doc.text(report.maturityLabel, M + matPadX, y + 22);
 
-  useBody(doc, 9);
+  // 4-stap bar rechts in de kaart
+  const currentStep = MATURITY_STEP[report.maturityLabel] ?? 1;
+  const barTotalWidth = 58;
+  const barSeg = (barTotalWidth - 6) / 4; // 4 segmenten + 3 gaps van 2mm
+  const barY = y + 20;
+  const barXStart = M + CW - matPadX - barTotalWidth;
+  for (let i = 1; i <= 4; i++) {
+    const segX = barXStart + (i - 1) * (barSeg + 2);
+    doc.setFillColor(...(i <= currentStep ? ACCENT_DARK : BORDER));
+    doc.roundedRect(segX, barY, barSeg, 3, 1.5, 1.5, "F");
+  }
+  useBody(doc, 7.5);
+  doc.setTextColor(...MUTED);
+  doc.text(`Stap ${currentStep} van 4`, M + CW - matPadX, barY + 8.5, { align: "right" });
+
+  // Uitlegtekst onderaan maturity-kaart
+  useBody(doc, 8.5);
   doc.setTextColor(...TEXT);
-  const matLines = doc.splitTextToSize(report.maturityExplanation, CW - 16);
-  doc.text(matLines.slice(0, 2), M + 8, y + 31);
-  y += matH + 10;
+  const matLines = doc.splitTextToSize(report.maturityExplanation, CW - matPadX * 2);
+  doc.text(matLines.slice(0, 2), M + matPadX, y + 34);
+  y += matH + 12;
 
-  // Disclaimer — zachte lime-cream met moss dot
-  const discH = 44;
-  doc.setFillColor(...CREAM_DEEP);
-  doc.roundedRect(M, y, CW, discH, 4, 4, "F");
-  doc.setFillColor(...PRIMARY);
-  doc.circle(M + 8, y + 10, 2, "F");
-  useBodyEm(doc, 7.5);
-  doc.setTextColor(...PRIMARY);
-  doc.setCharSpace(0.4);
-  doc.text("LET OP   ·   INDICATIEF RAPPORT", M + 14, y + 11);
-  doc.setCharSpace(0);
-
-  useBody(doc, 9);
-  doc.setTextColor(...TEXT);
-  const discLines = doc.splitTextToSize(
-    "Dit rapport is een indicatieve inschatting op basis van de 20 antwoorden die u gaf en is géén juridisch advies. " +
-      "Wettelijke drempels voor onderwerpen als CSRD, CSDDD, EU-ETS of energiebesparingsplicht hangen vaak af van " +
-      "details die een korte scan niet volledig uit kan vragen. Verifieer toepasselijkheid zelf of bespreek met Act Right " +
-      "voor compliance- of investeringsbesluiten.",
-    CW - 16
-  );
-  doc.text(discLines, M + 8, y + 17);
-  y += discH + 14;
-
-  // Thema-scores
+  // ========= 02 · Actieve thema's =========
   y = drawEyebrow(doc, "02  ·  Actieve thema's", M, y);
   y = drawHeading(doc, "Welke ESG-thema's spelen voor u?", M, y, CW, 18);
   y += 6;
 
   const activeThemes = report.themeScores.filter(t => t.active).slice(0, 6);
+  const themeBarWidth = 72;
   activeThemes.forEach(t => {
-    if (y > H - 40) return; // simpele bounds-check
-    const barWidth = Math.min(70, Math.max(4, t.score * 7));
-    // Zachte rail
+    const pct = Math.min(1, Math.max(0.1, t.score / 10));
+    const fillWidth = themeBarWidth * pct;
+    // Rail
     doc.setFillColor(...BORDER);
-    doc.roundedRect(M, y + 2.5, 70, 2.2, 1, 1, "F");
-    // Voortgang
+    doc.roundedRect(M, y + 2.5, themeBarWidth, 2.4, 1.2, 1.2, "F");
+    // Fill
     doc.setFillColor(...ACCENT);
-    doc.roundedRect(M, y + 2.5, barWidth, 2.2, 1, 1, "F");
+    doc.roundedRect(M, y + 2.5, fillWidth, 2.4, 1.2, 1.2, "F");
     // Thema-naam
     useBodyEm(doc, 10);
     doc.setTextColor(...PRIMARY);
-    doc.text(t.theme.name, M + 76, y + 4.5);
-    y += 10;
+    doc.text(t.theme.name, M + themeBarWidth + 6, y + 4.5);
+    y += 9;
   });
+
+  // ========= Disclaimer ONDERAAN de pagina =========
+  // Hard anchor op onderkant: bereken exact waar de disclaimer moet staan
+  // zodat er ~18mm ruimte onder staat voor footer.
+  const discH = 42;
+  const footerSafeY = H - 18;
+  const discY = footerSafeY - discH;
+
+  doc.setFillColor(...CREAM_DEEP);
+  doc.roundedRect(M, discY, CW, discH, 4, 4, "F");
+  doc.setFillColor(...PRIMARY);
+  doc.circle(M + 10, discY + 9, 1.8, "F");
+  useBodyEm(doc, 7.5);
+  doc.setTextColor(...PRIMARY);
+  doc.setCharSpace(0.4);
+  doc.text("LET OP   ·   INDICATIEF RAPPORT", M + 15, discY + 10);
+  doc.setCharSpace(0);
+
+  useBody(doc, 8.5);
+  doc.setTextColor(...TEXT);
+  const discLines = doc.splitTextToSize(
+    "Dit rapport is een indicatieve inschatting op basis van de 20 antwoorden die u gaf en is géén juridisch advies. " +
+      "Wettelijke drempels voor CSRD, CSDDD, EU-ETS of energiebesparingsplicht hangen vaak af van details die een " +
+      "korte scan niet volledig uit kan vragen. Verifieer toepasselijkheid zelf of bespreek met Act Right.",
+    CW - 20
+  );
+  doc.text(discLines.slice(0, 4), M + 10, discY + 17);
 }
 
 // ============= Topic card =============
+// Card-geometrie:
+//   - Lime accent-balk helemaal links (3mm breed, cardX tot cardX+3)
+//   - Card-border start bij cardX+5, eindigt bij cardX+cardW (border-width cardW-5)
+//   - Inhoud-padding binnen de border: 8mm links van border, 8mm rechts
+//   - Waarom-blok zit BINNEN de border met zelfde 5mm inset aan beide kanten
 function drawTopicCard(
   doc: jsPDF,
   item: ScoredTopic,
@@ -301,14 +359,14 @@ function drawTopicCard(
   y: number,
   M: number,
   CW: number,
-  H: number
+  H: number,
+  sectionLabel: string = "Vervolg"
 ): number {
-  // Benodigde ruimte schatten: titel + 2 meta-lijnen + waarom-block
-  const neededMinH = 48;
-  if (y + neededMinH > H - 25) {
+  const neededMinH = 56;
+  if (y + neededMinH > H - 22) {
     doc.addPage();
     softPageBackground(doc);
-    drawPageHeader(doc, "Wat nu relevant is (vervolg)");
+    drawPageHeader(doc, sectionLabel);
     y = 40;
   }
 
@@ -316,93 +374,101 @@ function drawTopicCard(
   const cardY = y;
   const cardW = CW;
 
-  // Card-body in cream (bijna background) met lichte offset
-  doc.setFillColor(...SOFT_BG);
-  doc.setDrawColor(...BORDER);
-  doc.setLineWidth(0.2);
-  // Voorlopige hoogte; we past 'm aan onderaan
-  // Start met compacte hoogte en groei met content
-  let cursor = cardY + 10;
+  // Geometrie-constanten (één keer gedefinieerd = consistente margins):
+  const BORDER_LEFT = cardX + 5;        // waar de card-border begint
+  const BORDER_RIGHT = cardX + cardW;   // waar de card-border eindigt
+  const INNER_PAD = 8;                  // padding binnen de border
+  const CONTENT_LEFT = BORDER_LEFT + INNER_PAD;
+  const CONTENT_WIDTH = BORDER_RIGHT - BORDER_LEFT - INNER_PAD * 2;
 
-  // Lime-accent streep links (smal, geen vlakken)
-  doc.setFillColor(...ACCENT);
-  doc.roundedRect(cardX, cardY, 3, 4, 1.5, 1.5, "F"); // placeholder; we tekenen de echte balk als laatste
+  // Reason-block geometrie: inset van 5mm links/rechts binnen de border
+  const REASON_INSET = 5;
+  const REASON_LEFT = BORDER_LEFT + REASON_INSET;
+  const REASON_WIDTH = BORDER_RIGHT - BORDER_LEFT - REASON_INSET * 2;
+  const REASON_TEXT_PAD = 6; // padding tekst binnen het reason-blok
+  const REASON_TEXT_WIDTH = REASON_WIDTH - REASON_TEXT_PAD * 2;
 
-  // Nummer in lime
+  let cursor = cardY + 11;
+
+  // Nummer (big, lime-dark) — linker zone
   useHeading(doc, 22);
   doc.setTextColor(...ACCENT_DARK);
-  doc.text(String(index).padStart(2, "0"), cardX + 10, cursor + 5);
+  doc.text(String(index).padStart(2, "0"), CONTENT_LEFT, cursor + 5);
 
-  // Title
-  useHeading(doc, 14);
+  // Titel & meta rechter zone (vanaf CONTENT_LEFT + 22 voor het nummer)
+  const titleX = CONTENT_LEFT + 22;
+  const titleW = BORDER_RIGHT - INNER_PAD - titleX;
+
+  useHeading(doc, 13);
   doc.setTextColor(...PRIMARY);
-  const titleLines = doc.splitTextToSize(item.topic.subject, cardW - 30);
-  doc.text(titleLines, cardX + 28, cursor + 2);
-  cursor += 2 + titleLines.length * 6 + 2;
+  const titleLines = doc.splitTextToSize(item.topic.subject, titleW);
+  doc.text(titleLines, titleX, cursor + 2);
+  cursor += 2 + titleLines.length * 5.5 + 3;
 
-  // Label + horizon meta-regel
-  useBodyEm(doc, 8);
+  // Label + horizon meta
+  useBodyEm(doc, 7.5);
   doc.setTextColor(...ACCENT_DARK);
-  doc.setCharSpace(0.3);
+  doc.setCharSpace(0.35);
   doc.text(
     `${item.label.toUpperCase()}   ·   ${item.horizon.toUpperCase()}`,
-    cardX + 28,
-    cursor + 2
+    titleX,
+    cursor + 1
   );
   doc.setCharSpace(0);
   cursor += 6;
 
-  // Description van topic (indien korter dan X chars, anders 2 regels)
+  // Korte beschrijving (max 2 regels), full-width
   if (item.topic.description) {
     useBody(doc, 9);
     doc.setTextColor(...TEXT);
-    const descLines = doc.splitTextToSize(item.topic.description, cardW - 16);
-    doc.text(descLines.slice(0, 2), cardX + 8, cursor + 4);
-    cursor += 4 + Math.min(2, descLines.length) * 4.2;
+    const descLines = doc.splitTextToSize(item.topic.description, CONTENT_WIDTH);
+    doc.text(descLines.slice(0, 2), CONTENT_LEFT, cursor + 4);
+    cursor += 4 + Math.min(2, descLines.length) * 4.5;
   }
 
-  // "Waarom voor u relevant" accent-block in lime-cream
+  // "Waarom voor u relevant" accent-blok
   const reasonText = (item.reasons || []).join(" ").trim();
   if (reasonText) {
-    cursor += 3;
+    cursor += 4;
     useBody(doc, 8.5);
-    const reasonLines = doc.splitTextToSize(reasonText, cardW - 20);
-    const reasonLineCount = Math.min(4, reasonLines.length);
-    const reasonBoxH = 6 + reasonLineCount * 4.2;
+    const reasonLines = doc.splitTextToSize(reasonText, REASON_TEXT_WIDTH);
+    const reasonLineCount = Math.min(5, reasonLines.length);
+    const reasonBoxH = 8 + reasonLineCount * 4.3;
 
+    // Reason-box: GECENTREERD in de card (REASON_INSET padding aan beide kanten)
     doc.setFillColor(...CREAM_DEEP);
-    doc.roundedRect(cardX + 4, cursor, cardW - 8, reasonBoxH, 2.5, 2.5, "F");
+    doc.roundedRect(REASON_LEFT, cursor, REASON_WIDTH, reasonBoxH, 2.5, 2.5, "F");
 
+    // Eyebrow binnenin, op REASON_TEXT_PAD vanaf linkerkant van reason-box
     useBodyEm(doc, 7);
     doc.setTextColor(...ACCENT_DARK);
     doc.setCharSpace(0.4);
-    doc.text("WAAROM VOOR U RELEVANT", cardX + 10, cursor + 4);
+    doc.text("WAAROM VOOR U RELEVANT", REASON_LEFT + REASON_TEXT_PAD, cursor + 5);
     doc.setCharSpace(0);
 
+    // Reason-tekst, zelfde padding links
     useBody(doc, 8.5);
     doc.setTextColor(...TEXT);
-    doc.text(reasonLines.slice(0, reasonLineCount), cardX + 10, cursor + 8.5);
-    cursor += reasonBoxH + 2;
+    doc.text(
+      reasonLines.slice(0, reasonLineCount),
+      REASON_LEFT + REASON_TEXT_PAD,
+      cursor + 10
+    );
+    cursor += reasonBoxH + 3;
   }
 
-  const cardH = cursor - cardY + 6;
+  const cardH = cursor - cardY + 4;
 
-  // Teken de volledige card-background nu we de hoogte kennen
-  // (we hebben de content al op de pagina gezet, dus deze rect moet eronder
-  // komen. Maar PDF is append-only dus we moeten dit vooraf doen. Herstel:
-  // zet achtergrond achteraf als transparante border ipv opvullen.)
-  doc.setFillColor(...SOFT_BG); // Re-fill card bg (overlay niet mogelijk in PDF;
-  // Alternatief: we laten de card-background wit/cream zijn want de page-bg is al
-  // SOFT_BG, en tekenen alleen de border + lime-bar.)
+  // Card-border (alleen outline) rond content - geen invulling
   doc.setDrawColor(...BORDER);
   doc.setLineWidth(0.2);
-  doc.roundedRect(cardX + 5, cardY, cardW - 5, cardH, 3, 3, "D");
+  doc.roundedRect(BORDER_LEFT, cardY, BORDER_RIGHT - BORDER_LEFT, cardH, 3, 3, "D");
 
-  // Lime-accent bar helemaal links (buiten de geroude border voor een hippe look)
+  // Lime accent-balk helemaal links, volle card-hoogte
   doc.setFillColor(...ACCENT);
   doc.roundedRect(cardX, cardY, 3, cardH, 1.5, 1.5, "F");
 
-  return cardY + cardH + 6;
+  return cardY + cardH + 7;
 }
 
 // ============= Not-priority tile =============
@@ -467,10 +533,12 @@ function drawCtaPage(doc: jsPDF) {
   doc.setFillColor(...PRIMARY);
   doc.rect(0, 0, W, H, "F");
 
-  // Cream strook bovenaan voor het logo
+  // Cream strook bovenaan voor het logo (aspect-ratio-correct)
+  const ctaLogoW = 50;
+  const { h: ctaLogoH } = logoSize(ctaLogoW);
   doc.setFillColor(...SOFT_BG);
-  doc.rect(0, 0, W, 30, "F");
-  doc.addImage(logoDataUrl, "PNG", M, 7, 55, 18);
+  doc.rect(0, 0, W, ctaLogoH + 14, "F");
+  doc.addImage(logoDataUrl, "PNG", M, 7, ctaLogoW, ctaLogoH);
 
   // Accent dots-cluster rechtsboven voor "verbinding"-motief
   doc.setFillColor(...ACCENT);
@@ -586,7 +654,7 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
     );
   } else {
     for (let i = 0; i < report.nuRelevant.length; i++) {
-      y = drawTopicCard(doc, report.nuRelevant[i], i + 1, y, M, CW, H);
+      y = drawTopicCard(doc, report.nuRelevant[i], i + 1, y, M, CW, H, "Wat nu relevant is");
     }
   }
 
@@ -611,7 +679,7 @@ export function generateESGPdf(report: ESGReport, contact: ContactInfo): jsPDF {
     y += 8;
 
     for (let i = 0; i < report.binnenkortRelevant.length; i++) {
-      y = drawTopicCard(doc, report.binnenkortRelevant[i], i + 1, y, M, CW, H);
+      y = drawTopicCard(doc, report.binnenkortRelevant[i], i + 1, y, M, CW, H, "Binnenkort relevant");
     }
   }
 
