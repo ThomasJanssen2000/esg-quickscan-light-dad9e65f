@@ -7,7 +7,9 @@ description: Gebruik bij iedere visuele wijziging aan de ESG Quickscan Light
   Display-Bold + Funnel Sans-Light, logo-gebruik, icon-stijl, tone-of-voice,
   layout-principes en concrete token-mappings voor zowel Tailwind als jsPDF.
   Altijd checken voor kleurkeuzes, font-weight-beslissingen, nieuwe componenten
-  of PDF-refinements.
+  of PDF-refinements. Gebruik gekoppeld aan de stock-skill `frontend-design`
+  voor algemene ontwerpfilosofie (bold direction, no-AI-slop, typografie-ritme,
+  spatial composition).
 ---
 
 # Act Right huisstijl — voor de ESG Quickscan Light
@@ -18,6 +20,66 @@ Quickscan. Aangelegd op basis van het officiele Act Right-brandbook
 office-theme.thmx`) en publieke actright.nl-verkenning. Waar brandbook en
 Office-theme verschillen: **brandbook wint** (Office-theme is een technische
 afgeleide met afrondingen en Office-specifieke hyperlink-accenten).
+
+## Werk altijd samen met `frontend-design`
+
+Deze skill werkt in tandem met de stock-skill `frontend-design`
+(geïnstalleerd in `~/.claude/skills/frontend-design/`). De verdeling:
+
+| Skill | Rol |
+|---|---|
+| **`frontend-design`** (stock) | **Het hoe**: bold aesthetic direction, geen generieke AI-esthetiek, karaktervolle typografie, dominante kleuren met scherpe accenten, motion-principes, spatial composition. |
+| **`act-right-huisstijl`** (deze) | **Het wat**: welke specifieke kleuren, lettertypes, componenten, tone-of-voice Act Right voert. |
+
+**Workflow bij elke UI/PDF-taak:**
+1. Lees eerst `frontend-design` voor ontwerpprincipes.
+2. Pas deze skill toe voor de Act Right-invulling.
+3. Controleer je output tegen beide: "Is het karaktervol genoeg
+   (frontend-design)?" én "Zit het binnen Act Right's merk (deze skill)?"
+
+## Act Right's aesthetic direction (volgens frontend-design-jargon)
+
+Van alle mogelijke richtingen die `frontend-design` opsomt, heeft Act Right
+één expliciete identiteit:
+
+**Editorial-minimal met natuur-referentie, geen maximalisme.**
+
+Concreet:
+- **Bold typography moments** (42pt editoriale titels op covers) — geen
+  timide centered headings.
+- **Dominante kleuren + scherpe accenten**: Resilient Moss en Adaptive
+  Lime als dominante duo, met Pure Light als canvas. Geen 5+ kleuren
+  gelijk verdeeld — dat verwatert.
+- **Generous negative space** boven visuele clutter.
+- **Horizontale ritme**: secties durven helemaal in moss of lime te zijn
+  (full-color blocks), niet alleen subtiele grijstinten.
+- **Asymmetrie**: logo linksboven, titel linksgroot, details
+  rechtsonder. Niet alles centeren.
+- **Terugkerende brand-motieven**: atoom-beeldmerk, cirkel-cluster (de
+  "verbinding"-metafoor uit brandbook p4), afgeronde vormen ipv strakke
+  hoeken.
+
+## Wat we expliciet vermijden (anti-AI-slop voor Act Right)
+
+Uit `frontend-design` gecombineerd met Act Right-specifiek:
+
+- ❌ **Generieke fonts**: Inter, Roboto, Arial, Helvetica (PDF-fallback
+  daargelaten). Altijd Funnel Display/Sans.
+- ❌ **Paarse gradients op wit** (cliche AI-landing-page-stijl).
+- ❌ **Vage centered hero's** met centered text, centered subtext,
+  centered button. Act Right gebruikt links-uitgelijnd editorial.
+- ❌ **Bright candy-colored accents** buiten lime. Blauw, oranje, rood
+  alleen in status/error-context.
+- ❌ **Cookie-cutter card-grids** met identieke cards. Gebruik
+  hiërarchie, varieer cards per belang.
+- ❌ **Pure wit en pure zwart**. Altijd Pure Light en Resilient Moss.
+- ❌ **Dunne drop-shadows overal**. Alleen `shadow-soft` waar echt
+  depth nodig is.
+- ❌ **Emoji** in productie-UI of PDF. Bewust Nederlands-professioneel
+  register.
+- ❌ **Hairlines als enige scheidingsmiddel**. Gebruik whitespace of
+  kleurblokken, hairlines alleen in tabellen of bij strak afgebakende
+  containers.
 
 ## Wanneer toepassen
 
@@ -371,7 +433,62 @@ waardes bijwerken.
 
 ---
 
-## 12. Toepassen op de ESG Quickscan (opvolglijst)
+## 12. Motion & micro-interacties
+
+Act Right's merk is niet maximalistisch, dus motion moet **fijn en
+doelgericht** zijn. De Quickscan gebruikt al `framer-motion` dat blijft
+de juiste keuze.
+
+### Regels
+
+- **Eén goed georchestreerd paginaload-moment** > tien losse
+  micro-interacties. Voor een nieuwe sectie: staggered reveal van
+  3–5 elementen met 40–80ms delay ertussen, niet 20 elementen met
+  trage easing.
+- **Easing**: `easeOut` of custom `[0.22, 1, 0.36, 1]` (licht-overshoot).
+  Nooit `linear`. Nooit `easeInOut` (voelt ambtelijk).
+- **Duration**: 300–500ms voor major transitions, 150–250ms voor
+  button-hovers en kleine state-changes. Niets boven 600ms, voelt traag.
+- **Hover-states** op interactieve elementen (cards, buttons, links)
+  zijn verplicht. Geen hover = dode interface.
+- **Scroll-triggered reveals** mogen op de intro en op het rapport —
+  maar alleen op hero-blokken, niet op elke card (anders ritmebreuk).
+- **Page transitions** binnen de Quickscan-stappen (intro →
+  questionnaire → leadgate → report): zacht fade + y-offset 12px.
+  Geen slides, geen flips.
+
+### Concrete patroon voor de Quickscan
+
+```tsx
+import { motion } from "framer-motion";
+
+// Hero-reveal
+<motion.div
+  initial={{ opacity: 0, y: 12 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+>
+  ...
+</motion.div>
+
+// Staggered list-reveal (bijv. topic-cards)
+const container = { animate: { transition: { staggerChildren: 0.06 } } };
+const item = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+};
+```
+
+### Wat we NIET doen
+
+- ❌ Auto-playing video backgrounds
+- ❌ Parallax scrolling (distractie van content)
+- ❌ Animated gradients (acid-trip-feel)
+- ❌ Rotating icons / spinning elements zonder functionele reden
+- ❌ Bounce-easing op serieuze content (wel OK op playful CTA's, maar
+  niet op compliance-topics)
+
+## 13. Toepassen op de ESG Quickscan (opvolglijst)
 
 Bij de eerstvolgende UI-verbeter-ronde, in prioriteit:
 
@@ -393,7 +510,7 @@ Bij de eerstvolgende UI-verbeter-ronde, in prioriteit:
 
 ---
 
-## 13. Anti-patterns
+## 14. Anti-patterns
 
 - Kleuren die niet in dit document staan
 - Grijze achtergronden (gebruik cream of moss)
@@ -410,7 +527,7 @@ Bij de eerstvolgende UI-verbeter-ronde, in prioriteit:
 
 ---
 
-## 14. Bronnen in deze skill-map
+## 15. Bronnen in deze skill-map
 
 - `assets/act-right-brandbook.pdf` — officieel merkdocument
 - `assets/act-right-office-theme.thmx` — Office-kleuren (ter validatie)
